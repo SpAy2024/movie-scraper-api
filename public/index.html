@@ -744,7 +744,7 @@
    // Cambiar esta línea en index.html
 const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3001/api/v1/movies'
-    : 'https://movie-scraper-api.onrender.com/api/v1/movies';
+    : '/api/v1/movies';  // ✅ Usa rutas relativas
 
     // Navbar scroll effect
     window.addEventListener('scroll', () => {
