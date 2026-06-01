@@ -46,6 +46,13 @@ app.use((req, res, next) => {
     next();
 });
 
+// Al final de src/index.js
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Servidor listo en http://0.0.0.0:${PORT}`);
+    console.log(`📱 Frontend disponible en http://0.0.0.0:${PORT}`);
+});
+
 // En la consola al iniciar
 console.log('🎬 Movie Scraper API');
 console.log('📡 Multi-proveedor de scraping para películas');

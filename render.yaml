@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: movie-scraper-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node src/index.js
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: NODE_VERSION
+        value: 18.0.0
+    healthCheckPath: /api/v1/movies/providers
+    autoDeploy: true

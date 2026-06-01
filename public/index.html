@@ -741,9 +741,10 @@
 </div>
 
 <script>
-    const API_URL = 'http://localhost:3001/api/v1/movies';
-    let currentServers = [];
-    let currentMovie = null;
+   // Cambiar esta línea en index.html
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3001/api/v1/movies'
+    : 'https://movie-scraper-api.onrender.com/api/v1/movies';
 
     // Navbar scroll effect
     window.addEventListener('scroll', () => {
