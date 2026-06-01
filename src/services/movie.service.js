@@ -8,7 +8,7 @@ const PeliHDProvider = require('../providers/pelihd.provider');
 const DeTodoPeliculasProvider = require('../providers/detodopeliculas.provider');
 const CineCalidadProvider = require('../providers/cinecalidad.provider');
 const PelisPlusHD1Provider = require('../providers/pelisplushd1.provider');
-const CineCalidadAMProvider = require('../providers/cinecalidadam.provider');
+//const CineCalidadAMProvider = require('../providers/cinecalidadam.provider');
 const LaMovieProvider = require('../providers/lamovie.provider');
 const SeriesKaoProvider = require('../providers/serieskao.provider');
 
@@ -25,7 +25,7 @@ class MovieService {
             detodopeliculas: new DeTodoPeliculasProvider(),
             cinecalidad: new CineCalidadProvider(),
             pelisplushd1: new PelisPlusHD1Provider(),
-            cinecalidadam: new CineCalidadAMProvider(),
+            //cinecalidadam: new CineCalidadAMProvider(),
             lamovie: new LaMovieProvider(),
             serieskao: new SeriesKaoProvider(),  // ← NUEVO
         };
