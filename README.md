@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🎬 Movie Scraper API
 
 Sistema de scraping multi-proveedor para películas, series, animes y doramas
@@ -73,3 +74,6 @@ Sistema de scraping multi-proveedor para peliculas, series y animes
 
 ## Licencia MIT
 "@ | Out-File -FilePath README.md -Encoding UTF8
+=======
+
+>>>>>>> c88d28f91dc386434e70621aaca2c2879c5eff84
