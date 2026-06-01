@@ -4,11 +4,10 @@ services:
     runtime: node
     plan: free
     buildCommand: npm install
-    startCommand: node src/index.js
+    startCommand: npm start
     envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
       - key: PORT
         value: 3001
-      - key: NODE_VERSION
-        value: 18.0.0
     healthCheckPath: /api/v1/movies/providers
-    autoDeploy: true
