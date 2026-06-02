@@ -1,11 +1,13 @@
-const EstrenosCinesaaProvider = require('./providers/estrenoscinesaa.provider');
-const CineCalidadProvider = require('./providers/cinecalidad.provider');
+//const EstrenosCinesaaProvider = require('./providers/estrenoscinesaa.provider');
+//const CineCalidadProvider = require('./providers/cinecalidad.provider');
+const SeriesKaoProvider = require('./providers/serieskao.provider'); // ← NUEVO
 
 class MovieService {
   constructor() {
     this.providers = {
-      estrenoscinesaa: new EstrenosCinesaaProvider(),
-      cinecalidad: new CineCalidadProvider(),
+      //estrenoscinesaa: new EstrenosCinesaaProvider(),
+      //cinecalidad: new CineCalidadProvider(),
+      serieskao: new SeriesKaoProvider(), // ← NUEVO
     };
     
     console.log(`🎬 MovieService inicializado con ${Object.keys(this.providers).length} proveedores`);
