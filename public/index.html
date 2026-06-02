@@ -11,14 +11,12 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Netflix Sans', 'Helvetica Neue', 'Segoe UI', Roboto, Arial, sans-serif;
             background: #141414;
             color: #fff;
             overflow-x: hidden;
         }
-
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -30,10 +28,6 @@
             background: #e50914;
             border-radius: 4px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #ff0a1a;
-        }
-
         .navbar {
             position: fixed;
             top: 0;
@@ -47,128 +41,63 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: all 0.3s ease;
         }
-
         .navbar-scrolled {
             background: #0a0a0a;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
-
         .logo {
             font-size: 1.8rem;
             font-weight: 800;
-            letter-spacing: -1px;
             background: linear-gradient(135deg, #e50914, #ff6b6b);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
             text-decoration: none;
         }
-
         .nav-links {
             display: flex;
             gap: 20px;
-            align-items: center;
         }
-
         .nav-links a {
             color: #e5e5e5;
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
         }
-
-        .nav-links a:hover {
-            color: #fff;
-        }
-
         .hero {
             position: relative;
             height: 80vh;
-            min-height: 500px;
-            background: linear-gradient(77deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,.4) 50%, rgba(0,0,0,.85) 100%);
-            margin-top: 0;
+            background: linear-gradient(77deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,.4) 50%);
             display: flex;
             align-items: center;
             padding: 0 60px;
         }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.png');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.3;
-            z-index: -1;
-        }
-
         .hero-content {
             max-width: 600px;
-            z-index: 1;
         }
-
         .hero h1 {
             font-size: 3.5rem;
-            font-weight: 800;
             margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
-
-        .hero p {
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-            color: #ddd;
-            line-height: 1.5;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
         .btn-primary, .btn-secondary {
             padding: 12px 30px;
             font-size: 1rem;
             font-weight: 600;
             border-radius: 4px;
             cursor: pointer;
-            transition: all 0.2s;
             border: none;
         }
-
         .btn-primary {
             background: #e50914;
             color: white;
         }
-
-        .btn-primary:hover {
-            background: #ff0a1a;
-            transform: scale(1.05);
-        }
-
         .btn-secondary {
             background: rgba(109,109,110,0.7);
             color: white;
         }
-
-        .btn-secondary:hover {
-            background: rgba(109,109,110,0.9);
-        }
-
         .search-section {
             padding: 30px 60px;
             background: #1a1a1a;
             margin: 20px 40px;
             border-radius: 12px;
         }
-
         .search-tabs {
             display: flex;
             gap: 10px;
@@ -176,7 +105,6 @@
             border-bottom: 2px solid #333;
             flex-wrap: wrap;
         }
-
         .tab-btn {
             background: none;
             border: none;
@@ -185,118 +113,58 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
         }
-
-        .tab-btn:hover {
-            color: #fff;
-        }
-
         .tab-btn.active {
             color: #e50914;
         }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: #e50914;
-        }
-
         .tab-pane {
             display: none;
         }
-
         .tab-pane.active {
             display: block;
         }
-
         .search-box {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
         }
-
         .search-input, .search-select {
             flex: 1;
             padding: 15px 20px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 8px;
             background: #2a2a2a;
             color: white;
-            outline: none;
+            border: none;
+            border-radius: 8px;
         }
-
-        .search-input:focus, .search-select:focus {
-            background: #3a3a3a;
-            box-shadow: 0 0 0 2px #e50914;
-        }
-
-        .search-select {
-            flex: 0.3;
-            cursor: pointer;
-        }
-
         .search-btn {
             padding: 15px 35px;
             background: #e50914;
             color: white;
             border: none;
             border-radius: 8px;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
         }
-
-        .search-btn:hover {
-            background: #ff0a1a;
-            transform: translateY(-2px);
-        }
-
-        .results-section {
-            padding: 30px 60px;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            border-left: 4px solid #e50914;
-            padding-left: 15px;
-        }
-
         .movie-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 20px;
+            margin-top: 20px;
         }
-
         .movie-card {
-            position: relative;
             border-radius: 8px;
             overflow: hidden;
             cursor: pointer;
-            transition: transform 0.3s, box-shadow 0.3s;
             background: #1a1a1a;
+            transition: transform 0.3s;
         }
-
         .movie-card:hover {
             transform: scale(1.05);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            z-index: 10;
         }
-
         .movie-card img {
             width: 100%;
             height: 270px;
             object-fit: cover;
         }
-
         .movie-card .no-image {
             width: 100%;
             height: 270px;
@@ -306,67 +174,11 @@
             justify-content: center;
             font-size: 3rem;
         }
-
-        .movie-info-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 40px 12px 12px;
-            background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .movie-card:hover .movie-info-overlay {
-            opacity: 1;
-        }
-
         .movie-card h3 {
+            padding: 10px;
             font-size: 0.9rem;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            text-align: center;
         }
-
-        .movie-meta {
-            display: flex;
-            gap: 10px;
-            font-size: 0.75rem;
-            color: #ddd;
-        }
-
-        .movie-year, .movie-rating {
-            display: inline-block;
-        }
-
-        .movie-rating {
-            color: #ffc107;
-        }
-
-        .badge-year {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #e50914;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-
-        .badge-rating {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.7);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            color: #ffc107;
-        }
-
         .modal {
             display: none;
             position: fixed;
@@ -376,38 +188,20 @@
             height: 100%;
             background: rgba(0,0,0,0.95);
             z-index: 2000;
-            overflow-y: auto;
         }
-
         .modal-content {
             max-width: 1000px;
             margin: 40px auto;
             background: #141414;
             border-radius: 12px;
             overflow: hidden;
-            position: relative;
-            animation: modalFadeIn 0.3s ease;
         }
-
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
         .modal-close {
             position: absolute;
             top: 20px;
             right: 25px;
             font-size: 28px;
             cursor: pointer;
-            color: white;
-            z-index: 10;
             background: rgba(0,0,0,0.5);
             width: 40px;
             height: 40px;
@@ -415,67 +209,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
         }
-
-        .modal-close:hover {
-            background: #e50914;
-            transform: scale(1.1);
-        }
-
-        .video-container {
-            position: relative;
-            background: #000;
-        }
-
-        .video-container iframe, .video-container video {
+        .video-container iframe {
             width: 100%;
             height: 56vh;
             border: none;
         }
-
         .modal-info {
             padding: 30px;
         }
-
-        .modal-info h2 {
-            font-size: 2rem;
-            margin-bottom: 15px;
-        }
-
-        .modal-meta {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            color: #aaa;
-            flex-wrap: wrap;
-        }
-
-        .modal-synopsis {
-            margin-bottom: 25px;
-            line-height: 1.6;
-            color: #ccc;
-        }
-
-        .servers-section {
-            margin-top: 20px;
-            border-top: 1px solid #333;
-            padding-top: 20px;
-        }
-
-        .servers-title {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            color: #e50914;
-            font-weight: 600;
-        }
-
         .servers-grid {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
+            margin-top: 15px;
         }
-
         .server-btn {
             padding: 10px 20px;
             background: #2a2a2a;
@@ -483,26 +231,14 @@
             border-radius: 6px;
             color: white;
             cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.85rem;
         }
-
         .server-btn:hover {
             background: #e50914;
-            border-color: #e50914;
-            transform: translateY(-2px);
         }
-
-        .server-btn.active {
-            background: #e50914;
-            border-color: #fff;
-        }
-
         .loading-spinner {
             text-align: center;
             padding: 60px;
         }
-
         .loading-spinner::after {
             content: '';
             display: inline-block;
@@ -513,25 +249,28 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
         .no-results {
             text-align: center;
             padding: 60px;
             color: #888;
-            font-size: 1.2rem;
         }
-
+        .provider-section {
+            margin-bottom: 40px;
+        }
+        .provider-title {
+            font-size: 1.3rem;
+            color: #e50914;
+            margin-bottom: 15px;
+        }
         .genres-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             gap: 12px;
             margin-top: 20px;
         }
-
         .genre-btn {
             padding: 12px;
             background: #2a2a2a;
@@ -539,89 +278,13 @@
             border-radius: 8px;
             color: white;
             cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
         }
-
         .genre-btn:hover {
             background: #e50914;
-            transform: translateY(-2px);
         }
-
-        .stats {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .stat-card {
-            background: rgba(0,0,0,0.5);
-            border-radius: 8px;
-            padding: 10px 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .stat-card span {
-            color: #e50914;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .provider-section {
-            margin-bottom: 40px;
-        }
-
-        .provider-title {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: #e50914;
-            display: inline-block;
-        }
-
         @media (max-width: 768px) {
-            .navbar {
-                padding: 0 20px;
-            }
-            .hero {
-                padding: 0 20px;
-                height: 60vh;
-            }
-            .hero h1 {
-                font-size: 2rem;
-            }
-            .search-section {
-                padding: 20px;
-                margin: 15px;
-            }
-            .results-section {
-                padding: 20px;
-            }
-            .movie-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 12px;
-            }
-            .movie-card img, .movie-card .no-image {
-                height: 200px;
-            }
-            .video-container iframe, .video-container video {
-                height: 40vh;
-            }
-            .modal-info h2 {
-                font-size: 1.5rem;
-            }
-            .search-select {
-                flex: 1;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .nav-links {
-                display: none;
-            }
-            .movie-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
+            .search-section { padding: 20px; margin: 15px; }
+            .movie-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
         }
     </style>
 </head>
@@ -639,7 +302,7 @@
 <div class="hero" id="heroSection">
     <div class="hero-content">
         <h1>Películas y Series Ilimitadas</h1>
-        <p>Disfruta del mejor contenido desde múltiples fuentes. Busca por título, actor, género o año.</p>
+        <p>Disfruta del mejor contenido desde múltiples fuentes.</p>
         <div class="hero-buttons">
             <button class="btn-primary" onclick="scrollToSearch()">Explorar Ahora</button>
             <button class="btn-secondary" onclick="searchByTitle('popular')">Populares</button>
@@ -658,39 +321,35 @@
 
         <div id="tab-title" class="tab-pane active">
             <div class="search-box">
-                <input type="text" class="search-input" id="titleInput" placeholder="Título de la película o serie...">
-                <input type="text" class="search-input" id="yearInput" placeholder="Año (opcional)" style="flex:0.2">
+                <input type="text" class="search-input" id="titleInput" placeholder="Título...">
+                <input type="text" class="search-input" id="yearInput" placeholder="Año" style="flex:0.2">
                 <select class="search-select" id="languageSelect">
                     <option value="es">Español</option>
                     <option value="en">Inglés</option>
                 </select>
                 <button class="search-btn" onclick="searchByTitle()">🔍 Buscar</button>
             </div>
-            <div id="titleResults" class="movie-grid" style="margin-top: 20px;"></div>
+            <div id="titleResults" class="movie-grid"></div>
         </div>
 
         <div id="tab-person" class="tab-pane">
             <div class="search-box">
-                <input type="text" class="search-input" id="personInput" placeholder="Nombre del actor/actriz...">
+                <input type="text" class="search-input" id="personInput" placeholder="Nombre del actor...">
                 <button class="search-btn" onclick="searchByPerson()">🎭 Buscar</button>
             </div>
-            <div id="personResults" class="movie-grid" style="margin-top: 20px;"></div>
+            <div id="personResults" class="movie-grid"></div>
         </div>
 
         <div id="tab-genre" class="tab-pane">
-            <div class="genres-grid" id="genresGrid">
-                <div class="loading-spinner"></div>
-            </div>
-            <div id="genreResults" class="movie-grid" style="margin-top: 20px;"></div>
+            <div class="genres-grid" id="genresGrid"></div>
+            <div id="genreResults" class="movie-grid"></div>
         </div>
 
         <div id="tab-providers" class="tab-pane">
             <div class="search-box">
-                <input type="text" class="search-input" id="directSearchInput" placeholder="Buscar directamente...">
+                <input type="text" class="search-input" id="directSearchInput" placeholder="Buscar...">
                 <select class="search-select" id="providerSelect">
                     <option value="">Todos los proveedores</option>
-                    <option value="estrenoscinesaa">EstrenosCinesaa</option>
-                    <option value="cinecalidad">CineCalidad</option>
                     <option value="serieskao">SeriesKao</option>
                 </select>
                 <button class="search-btn" onclick="searchDirect()">🔍 Buscar</button>
@@ -698,613 +357,201 @@
             <div id="directResults"></div>
         </div>
     </div>
-
-    <div class="results-section" id="resultsSection">
-        <div id="stats" class="stats"></div>
-        <div id="results"></div>
-    </div>
 </main>
 
 <div id="modal" class="modal">
     <div class="modal-content">
         <span class="modal-close" onclick="closeModal()">&times;</span>
-        <div id="modalBody">
-            <div class="loading-spinner"></div>
-        </div>
+        <div id="modalBody"><div class="loading-spinner"></div></div>
     </div>
 </div>
 
 <script>
-// ============================================================
-// CONFIGURACIÓN
-// ============================================================
-const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3001/api/v1/movies'
-    : '/api/v1/movies';
-
+const API_URL = '/api/v1/movies';
 const API_KEY = 'a7f3k9m2x8q4w1e6r5t0y9u4i7o2p1l3';
 
-async function fetchWithAuth(url, options = {}) {
-    const headers = {
-        'x-api-key': API_KEY,
-        'Content-Type': 'application/json',
-        ...options.headers
-    };
-    const response = await fetch(url, { ...options, headers });
-    return response;
-}
-
-// ============================================================
-// NAVBAR
-// ============================================================
 window.addEventListener('scroll', () => {
     const navbar = document.getElementById('navbar');
-    if (window.scrollY > 50) {
-        navbar.classList.add('navbar-scrolled');
-    } else {
-        navbar.classList.remove('navbar-scrolled');
-    }
+    navbar.classList.toggle('navbar-scrolled', window.scrollY > 50);
 });
 
-function showHero() {
-    document.getElementById('heroSection').scrollIntoView({ behavior: 'smooth' });
-}
+function showHero() { document.getElementById('heroSection').scrollIntoView({ behavior: 'smooth' }); }
+function scrollToSearch() { document.getElementById('searchSection').scrollIntoView({ behavior: 'smooth' }); }
 
-function scrollToSearch() {
-    document.getElementById('searchSection').scrollIntoView({ behavior: 'smooth' });
-}
-
-// ============================================================
-// TABS
-// ============================================================
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         document.getElementById(`tab-${tab}`).classList.add('active');
     });
 });
 
-// ============================================================
-// BÚSQUEDA POR TÍTULO
-// ============================================================
-async function searchByTitle(preset = null) {
-    let title = document.getElementById('titleInput')?.value.trim();
+async function searchByTitle(preset) {
+    let title = document.getElementById('titleInput').value.trim();
     if (preset === 'popular') title = 'popular';
-    if (!title && preset !== 'popular') {
-        alert('Ingresa un título');
-        return;
-    }
-
-    const year = document.getElementById('yearInput')?.value.trim();
-    const language = document.getElementById('languageSelect')?.value || 'es';
-
+    if (!title && preset !== 'popular') return alert('Ingresa un título');
+    
     const resultsDiv = document.getElementById('titleResults');
     resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
-
+    
     try {
-        let url;
-        if (preset === 'popular') {
-            url = `${API_URL}/tmdb/search-by-genre?genreId=28&page=1&language=${language}`;
-        } else {
-            url = `${API_URL}/tmdb/search?title=${encodeURIComponent(title)}&language=${language}`;
-            if (year) url += `&year=${year}`;
-        }
-
-        const response = await fetchWithAuth(url);
+        let url = preset === 'popular' ? `${API_URL}/tmdb/search-by-genre?genreId=28` : `${API_URL}/tmdb/search?title=${encodeURIComponent(title)}`;
+        const response = await fetch(`${url}&apiKey=${API_KEY}`);
         const data = await response.json();
-
-        if (preset === 'popular') {
-            if (data.success && data.movies) {
-                displayMovieGrid(data.movies, resultsDiv);
-            } else {
-                resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron películas populares</div>';
-            }
-        } else if (data.success && data.movie) {
-            resultsDiv.innerHTML = '';
-            const card = createMovieCard(data.movie);
-            resultsDiv.appendChild(card);
-            findServersForMovie(data.movie.title, data.movie.year);
-        } else if (data.results && data.results.length > 0) {
-            displayMovieGrid(data.results, resultsDiv);
-        } else {
-            resultsDiv.innerHTML = '<div class="no-results">😞 No se encontró la película</div>';
-        }
+        
+        if (data.results?.length) displayMovieGrid(data.results, resultsDiv);
+        else if (data.movie) displayMovieGrid([data.movie], resultsDiv);
+        else resultsDiv.innerHTML = '<div class="no-results">😞 No se encontró la película</div>';
     } catch (error) {
-        console.error('Error:', error);
         resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
     }
 }
 
-// ============================================================
-// BÚSQUEDA POR ACTOR
-// ============================================================
 async function searchByPerson() {
-    const personName = document.getElementById('personInput').value.trim();
-    if (!personName) {
-        alert('Ingresa un nombre');
-        return;
-    }
-
+    const name = document.getElementById('personInput').value.trim();
+    if (!name) return alert('Ingresa un nombre');
+    
     const resultsDiv = document.getElementById('personResults');
     resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
-
+    
     try {
-        const response = await fetchWithAuth(`${API_URL}/tmdb/search-by-person?name=${encodeURIComponent(personName)}`);
+        const response = await fetch(`${API_URL}/tmdb/search-by-person?name=${encodeURIComponent(name)}&apiKey=${API_KEY}`);
         const data = await response.json();
-
-        if (data.success && data.movies && data.movies.length > 0) {
-            displayMovieGrid(data.movies, resultsDiv);
-        } else {
-            resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron películas para este actor</div>';
-        }
+        if (data.movies?.length) displayMovieGrid(data.movies, resultsDiv);
+        else resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron resultados</div>';
     } catch (error) {
-        console.error('Error:', error);
-        resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
+        resultsDiv.innerHTML = '<div class="no-results">❌ Error</div>';
     }
 }
 
-// ============================================================
-// GÉNEROS
-// ============================================================
 async function loadGenres() {
-    const genresGrid = document.getElementById('genresGrid');
+    const grid = document.getElementById('genresGrid');
     try {
-        const response = await fetchWithAuth(`${API_URL}/tmdb/genres`);
+        const response = await fetch(`${API_URL}/tmdb/genres?apiKey=${API_KEY}`);
         const data = await response.json();
-
-        if (data.success && data.genres) {
-            genresGrid.innerHTML = '';
+        if (data.genres) {
+            grid.innerHTML = '';
             data.genres.forEach(genre => {
                 const btn = document.createElement('button');
                 btn.className = 'genre-btn';
                 btn.textContent = genre.name;
                 btn.onclick = () => searchByGenre(genre.id);
-                genresGrid.appendChild(btn);
+                grid.appendChild(btn);
             });
-        } else {
-            genresGrid.innerHTML = '<div class="no-results">❌ Error cargando géneros</div>';
         }
     } catch (error) {
-        console.error('Error:', error);
-        genresGrid.innerHTML = '<div class="no-results">❌ Error cargando géneros</div>';
+        grid.innerHTML = '<div class="no-results">❌ Error cargando géneros</div>';
     }
 }
 
 async function searchByGenre(genreId) {
     const resultsDiv = document.getElementById('genreResults');
     resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
-
     try {
-        const response = await fetchWithAuth(`${API_URL}/tmdb/search-by-genre?genreId=${genreId}&page=1`);
+        const response = await fetch(`${API_URL}/tmdb/search-by-genre?genreId=${genreId}&apiKey=${API_KEY}`);
         const data = await response.json();
-
-        if (data.success && data.movies && data.movies.length > 0) {
-            displayMovieGrid(data.movies, resultsDiv);
-        } else {
-            resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron películas en este género</div>';
-        }
+        if (data.movies?.length) displayMovieGrid(data.movies, resultsDiv);
+        else resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron películas</div>';
     } catch (error) {
-        console.error('Error:', error);
-        resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
+        resultsDiv.innerHTML = '<div class="no-results">❌ Error</div>';
     }
 }
 
-// ============================================================
-// BÚSQUEDA DIRECTA EN PROVEEDORES
-// ============================================================
 async function searchDirect() {
     const query = document.getElementById('directSearchInput').value.trim();
     const provider = document.getElementById('providerSelect').value;
-
-    if (!query) {
-        alert('Ingresa un término de búsqueda');
-        return;
-    }
-
+    if (!query) return alert('Ingresa un término');
+    
     const resultsDiv = document.getElementById('directResults');
     resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
-
+    
     try {
-        let url = `${API_URL}/search?q=${encodeURIComponent(query)}`;
+        let url = `${API_URL}/search?q=${encodeURIComponent(query)}&apiKey=${API_KEY}`;
         if (provider) url += `&provider=${provider}`;
-
-        const response = await fetchWithAuth(url);
+        const response = await fetch(url);
         const data = await response.json();
-
         displayProviderResults(data.results, resultsDiv);
     } catch (error) {
-        console.error('Error:', error);
-        resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
+        resultsDiv.innerHTML = '<div class="no-results">❌ Error</div>';
     }
 }
 
-// ============================================================
-// BUSCAR SERVIDORES
-// ============================================================
-async function findServersForMovie(title, year) {
-    const serversDiv = document.getElementById('movieServers');
-    if (!serversDiv) return;
-
-    serversDiv.innerHTML = '<div class="loading-spinner"></div>';
-
-    try {
-        const response = await fetchWithAuth(`${API_URL}/search-with-tmdb?title=${encodeURIComponent(title)}&year=${year || ''}`);
-        const data = await response.json();
-
-        if (data.servers && data.servers.length > 0) {
-            serversDiv.innerHTML = `
-                <div class="servers-section">
-                    <div class="servers-title">🎬 SERVIDORES DISPONIBLES (${data.totalServers})</div>
-                    <div class="servers-grid" id="serversGrid"></div>
-                </div>
-            `;
-            const serversGrid = document.getElementById('serversGrid');
-            data.servers.forEach(provider => {
-                provider.servers.forEach(server => {
-                    if (server.url && server.url !== '#') {
-                        const btn = document.createElement('button');
-                        btn.className = 'server-btn';
-                        btn.textContent = `${provider.provider.toUpperCase()} - ${server.server || 'Servidor'}`;
-                        btn.onclick = () => openPlayer(server.url);
-                        serversGrid.appendChild(btn);
-                    }
-                });
-            });
-        } else {
-            serversDiv.innerHTML = '<div class="no-results">⚠️ No se encontraron servidores</div>';
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        serversDiv.innerHTML = '<div class="no-results">❌ Error buscando servidores</div>';
-    }
-}
-
-// ============================================================
-// MOSTRAR RESULTADOS
-// ============================================================
 function displayMovieGrid(movies, container) {
     container.innerHTML = '';
-    if (!movies || movies.length === 0) {
-        container.innerHTML = '<div class="no-results">😞 No se encontraron resultados</div>';
-        return;
-    }
     movies.forEach(movie => {
-        const card = createMovieCard(movie);
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        const poster = movie.posterPath ? `https://image.tmdb.org/t/p/w500${movie.posterPath}` : (movie.thumbnail || null);
+        card.innerHTML = `
+            ${poster ? `<img src="${poster}" alt="${movie.title}">` : '<div class="no-image">🎬</div>'}
+            <h3>${movie.title}</h3>
+        `;
+        card.onclick = () => playMovie(movie.url || `https://serieskao.top/pelicula/${movie.title.toLowerCase()}-vwSojy`, movie.title, 'serieskao');
         container.appendChild(card);
     });
 }
 
-function createMovieCard(movie) {
-    const card = document.createElement('div');
-    card.className = 'movie-card';
-    
-    const posterUrl = movie.posterPath || movie.poster_path || movie.thumbnail;
-    const poster = posterUrl && posterUrl.startsWith('http') ? posterUrl : (posterUrl ? `https://image.tmdb.org/t/p/w500${posterUrl}` : null);
-    const title = movie.title || movie.name || 'Sin título';
-    const year = movie.year || (movie.release_date ? movie.release_date.split('-')[0] : '');
-    const rating = movie.voteAverage || movie.vote_average;
-    
-    card.innerHTML = `
-        ${poster ? 
-            `<img src="${poster}" alt="${title}" onerror="this.src='https://placehold.co/200x280?text=No+Image'">` : 
-            '<div class="no-image">🎬</div>'
-        }
-        ${year ? `<span class="badge-year">${year}</span>` : ''}
-        ${rating ? `<span class="badge-rating">⭐ ${rating.toFixed(1)}</span>` : ''}
-        <div class="movie-info-overlay">
-            <h3>${title.substring(0, 40)}${title.length > 40 ? '...' : ''}</h3>
-            <div class="movie-meta">
-                ${year ? `<span class="movie-year">📅 ${year}</span>` : ''}
-                ${rating ? `<span class="movie-rating">⭐ ${rating.toFixed(1)}</span>` : ''}
-            </div>
-        </div>
-    `;
-    
-    card.onclick = () => {
-        if (movie.id) {
-            getMovieAndServers(movie.id);
-        } else if (movie.url) {
-            playMovie(movie.url, title, movie.provider);
-        }
-    };
-    
-    return card;
-}
-
 function displayProviderResults(results, container) {
     container.innerHTML = '';
-    let hasResults = false;
-
     for (const [provider, movies] of Object.entries(results)) {
-        if (!movies || movies.length === 0) continue;
-        hasResults = true;
-
+        if (!movies?.length) continue;
         const section = document.createElement('div');
         section.className = 'provider-section';
         section.innerHTML = `<h3 class="provider-title">📺 ${provider.toUpperCase()}</h3>`;
         const grid = document.createElement('div');
         grid.className = 'movie-grid';
-        
-        movies.slice(0, 12).forEach(movie => {
-            const card = createMovieCard({ ...movie, provider: provider, url: movie.url });
+        movies.forEach(movie => {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            card.innerHTML = `<h3>${movie.title}</h3>`;
+            card.onclick = () => playMovie(movie.url, movie.title, provider);
             grid.appendChild(card);
         });
-        
         section.appendChild(grid);
         container.appendChild(section);
-    }
-
-    if (!hasResults) {
-        container.innerHTML = '<div class="no-results">😞 No se encontraron resultados</div>';
-    }
-}
-
-// ============================================================
-// MODAL Y REPRODUCTOR
-// ============================================================
-async function getMovieAndServers(tmdbId) {
-    const modal = document.getElementById('modal');
-    const modalBody = document.getElementById('modalBody');
-    
-    modalBody.innerHTML = '<div class="loading-spinner"></div>';
-    modal.style.display = 'block';
-
-    try {
-        const response = await fetchWithAuth(`${API_URL}/tmdb/movie/${tmdbId}`);
-        const data = await response.json();
-        
-        if (data.success && data.movie) {
-            renderMovieModal(data.movie);
-            const serversResponse = await fetchWithAuth(`${API_URL}/search-with-tmdb?title=${encodeURIComponent(data.movie.title)}&year=${data.movie.year || ''}`);
-            const serversData = await serversResponse.json();
-            if (serversData.servers && serversData.servers.length > 0) {
-                addServersToModal(serversData.servers);
-            }
-        } else {
-            modalBody.innerHTML = '<div class="no-results">❌ No se pudo cargar la información</div>';
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        modalBody.innerHTML = '<div class="no-results">❌ Error al cargar</div>';
     }
 }
 
 async function playMovie(url, title, provider) {
-    console.log('🎬 playMovie llamado:', { url, title, provider });
-    
+    console.log('🎬 playMovie:', { url, title, provider });
     const modal = document.getElementById('modal');
     const modalBody = document.getElementById('modalBody');
-    
     modalBody.innerHTML = '<div class="loading-spinner"></div>';
     modal.style.display = 'block';
     
     try {
-        // Llamar directamente al endpoint /info con la API Key
         const response = await fetch(`${API_URL}/info?url=${encodeURIComponent(url)}&apiKey=${API_KEY}`);
         const result = await response.json();
-        
-        console.log('Respuesta del backend:', result);
-        
-        if (!result.success || !result.data) {
-            throw new Error('No se recibieron datos');
-        }
+        if (!result.data) throw new Error('No hay datos');
         
         const movie = result.data;
-        
-        // Construir el HTML del modal directamente
         modalBody.innerHTML = `
-            <div class="video-container">
-                <div id="playerFrame" style="display: flex; align-items: center; justify-content: center; height: 56vh; background: #000; color: #888;">
-                    Selecciona un servidor para reproducir
-                </div>
-            </div>
+            <div class="video-container"><div id="playerFrame" style="height:56vh; background:#000; display:flex; align-items:center; justify-content:center; color:#888;">Selecciona un servidor</div></div>
             <div class="modal-info">
                 <h2>${movie.title}</h2>
-                <div class="modal-meta">
-                    ${movie.year ? `<span>📅 ${movie.year}</span>` : ''}
-                </div>
-                <div class="modal-synopsis">${movie.synopsis || 'Sinopsis no disponible'}</div>
-                <div class="servers-section">
-                    <div class="servers-title">🎬 SERVIDORES DISPONIBLES</div>
-                    <div class="servers-grid" id="serversGridModal"></div>
-                </div>
+                <p>${movie.synopsis || ''}</p>
+                <div class="servers-grid" id="serversGrid"></div>
             </div>
         `;
-        
-        // Agregar los botones de servidores
-        const serversGrid = document.getElementById('serversGridModal');
-        if (movie.downloadLinks && movie.downloadLinks.length > 0) {
-            movie.downloadLinks.forEach(server => {
+        const grid = document.getElementById('serversGrid');
+        if (movie.downloadLinks?.length) {
+            movie.downloadLinks.forEach(s => {
                 const btn = document.createElement('button');
                 btn.className = 'server-btn';
-                btn.textContent = server.server || 'Servidor';
+                btn.textContent = s.server;
                 btn.onclick = () => {
-                    const playerFrame = document.getElementById('playerFrame');
-                    playerFrame.innerHTML = `<iframe src="${server.url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
+                    const frame = document.getElementById('playerFrame');
+                    frame.innerHTML = `<iframe src="${s.url}" frameborder="0" allowfullscreen style="width:100%; height:100%;"></iframe>`;
                 };
-                serversGrid.appendChild(btn);
+                grid.appendChild(btn);
             });
         } else {
-            serversGrid.innerHTML = '<div class="no-results">⚠️ No hay servidores disponibles</div>';
+            grid.innerHTML = '<div class="no-results">⚠️ No hay servidores</div>';
         }
-        
     } catch (error) {
-        console.error('Error:', error);
-        modalBody.innerHTML = `
-            <div class="no-results">
-                ❌ Error: ${error.message}<br>
-                <button onclick="closeModal()" class="server-btn">Cerrar</button>
-            </div>
-        `;
-    }
-}
-
-function renderMovieModal(movie) {
-    const modalBody = document.getElementById('modalBody');
-    
-    // Validar que movie existe
-    if (!movie) {
-        modalBody.innerHTML = '<div class="no-results">❌ No se pudo cargar la información de la película</div>';
-        return;
-    }
-    
-    const title = movie.title || movie.name || 'Sin título';
-    const posterUrl = movie.posterPath || movie.poster_path || movie.poster;
-    const poster = posterUrl ? (posterUrl.startsWith('http') ? posterUrl : `https://image.tmdb.org/t/p/w500${posterUrl}`) : null;
-    const year = movie.year || (movie.release_date ? movie.release_date.split('-')[0] : '');
-    const rating = movie.voteAverage || movie.vote_average;
-    const runtime = movie.runtime;
-    const overview = movie.overview || movie.synopsis || 'Sinopsis no disponible.';
-    
-    modalBody.innerHTML = `
-        <div class="video-container" id="videoContainer">
-            <div id="playerFrame" style="display: flex; align-items: center; justify-content: center; height: 56vh; background: #000; color: #888;">
-                Selecciona un servidor para reproducir
-            </div>
-        </div>
-        <div class="modal-info">
-            <h2>${escapeHtml(title)}</h2>
-            <div class="modal-meta">
-                ${year ? `<span>📅 ${escapeHtml(year)}</span>` : ''}
-                ${rating ? `<span>⭐ ${parseFloat(rating).toFixed(1)}/10</span>` : ''}
-                ${runtime ? `<span>⏱️ ${runtime} min</span>` : ''}
-            </div>
-            <div class="modal-synopsis">${escapeHtml(overview)}</div>
-            <div class="servers-section" id="serversSection">
-                <div class="servers-title">🎬 BUSCANDO SERVIDORES...</div>
-            </div>
-        </div>
-    `;
-}
-
-// Función auxiliar para escapar HTML
-function escapeHtml(text) {
-    if (!text) return '';
-    return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-
-function addServersToModal(serversList) {
-    const serversSection = document.getElementById('serversSection');
-    if (!serversSection) return;
-    
-    let allServers = [];
-    serversList.forEach(item => {
-        if (item.servers && Array.isArray(item.servers)) {
-            allServers.push(...item.servers);
-        } else if (item.url) {
-            allServers.push(item);
-        }
-    });
-    
-    console.log('📡 Servidores encontrados:', allServers);
-    
-    if (allServers.length > 0) {
-        serversSection.innerHTML = `
-            <div class="servers-title">🎬 SERVIDORES DISPONIBLES (${allServers.length})</div>
-            <div class="servers-grid" id="serversGridModal"></div>
-        `;
-        const serversGrid = document.getElementById('serversGridModal');
-        
-        allServers.forEach((server, idx) => {
-            const btn = document.createElement('button');
-            btn.className = 'server-btn';
-            btn.textContent = server.server || `Servidor ${idx + 1}`;
-            
-            // Construir URL completa si es relativa
-            let url = server.url || '';
-            if (url.startsWith('/')) {
-                url = 'https://serieskao.top' + url;
-            }
-            btn.setAttribute('data-url', url);
-            
-            btn.onclick = function(e) {
-                e.preventDefault();
-                const videoUrl = this.getAttribute('data-url');
-                console.log(`🎬 Click en servidor: ${server.server} - URL: ${videoUrl}`);
-                openPlayer(videoUrl);
-                document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-            };
-            
-            serversGrid.appendChild(btn);
-        });
-    } else {
-        serversSection.innerHTML = '<div class="no-results">⚠️ No se encontraron servidores para esta película</div>';
-    }
-}
-
-async function openPlayer(url) {
-    console.log(`🎬 Abriendo reproductor con URL: ${url}`);
-    
-    const playerFrame = document.getElementById('playerFrame');
-    if (!playerFrame) {
-        console.error('❌ No se encontró el elemento playerFrame');
-        return;
-    }
-    
-    playerFrame.style.display = 'block';
-    
-    // Convertir URL relativa a absoluta si es necesario
-    let finalUrl = url;
-    if (url.startsWith('/')) {
-        finalUrl = 'https://serieskao.top' + url;
-        console.log(`🔄 URL relativa convertida: ${finalUrl}`);
-    }
-    
-    // Caso 1: Es un enlace de estrenoscinesaa.com/links/
-    if (finalUrl.includes('estrenoscinesaa.com/links/')) {
-        console.log('🔄 Resolviendo enlace de estrenoscinesaa...');
-        playerFrame.innerHTML = '<div class="loading-spinner"></div>';
-        
-        try {
-            const response = await fetchWithAuth('/api/v1/movies/resolve-link', {
-                method: 'POST',
-                body: JSON.stringify({ url: finalUrl })
-            });
-            const data = await response.json();
-            
-            if (data.success && data.resolvedUrl) {
-                window.open(data.resolvedUrl, '_blank');
-                playerFrame.innerHTML = `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px; text-align: center; padding: 20px;">
-                        <p style="color: #fff;">El contenido se abrirá en una nueva pestaña</p>
-                        <button onclick="window.open('${data.resolvedUrl}', '_blank')" class="server-btn">🔗 Abrir enlace</button>
-                    </div>
-                `;
-            } else {
-                throw new Error('No se pudo resolver el enlace');
-            }
-        } catch (error) {
-            playerFrame.innerHTML = `<iframe src="${finalUrl}" frameborder="0" allowfullscreen style="width:100%; height:100%;"></iframe>`;
-        }
-    }
-    // Caso 2: VidURL de SeriesKao (Embed69)
-    else if (finalUrl.includes('/vidurl/') || finalUrl.includes('serieskao.top/vidurl/')) {
-        console.log('🎬 Cargando reproductor Embed69 de SeriesKao');
-        // Cargar la URL directamente en el iframe
-        playerFrame.innerHTML = `<iframe src="${finalUrl}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width: 100%; height: 100%;"></iframe>`;
-    }
-    // Caso 3: YouTube
-    else if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be')) {
-        let videoId = finalUrl.split('v=')[1]?.split('&')[0] || finalUrl.split('/').pop();
-        playerFrame.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
-    }
-    // Caso 4: Video directo
-    else if (finalUrl.includes('.mp4') || finalUrl.includes('.m3u8') || finalUrl.includes('.mkv')) {
-        playerFrame.innerHTML = `<video controls autoplay style="width: 100%; height: 100%;"><source src="${finalUrl}" type="video/mp4"></video>`;
-    }
-    // Caso 5: Otros iframes
-    else {
-        playerFrame.innerHTML = `<iframe src="${finalUrl}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width: 100%; height: 100%;"></iframe>`;
+        modalBody.innerHTML = `<div class="no-results">❌ Error: ${error.message}<br><button onclick="closeModal()">Cerrar</button></div>`;
     }
 }
 
@@ -1312,29 +559,9 @@ function closeModal() {
     document.getElementById('modal').style.display = 'none';
 }
 
-// ============================================================
-// INICIALIZAR
-// ============================================================
 loadGenres();
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
-});
-
-document.getElementById('titleInput')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') searchByTitle();
-});
-document.getElementById('personInput')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') searchByPerson();
-});
-document.getElementById('directSearchInput')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') searchDirect();
-});
-
-window.testServer = function(url) {
-    console.log('🧪 Probando servidor:', url);
-    openPlayer(url);
-};
+document.getElementById('titleInput')?.addEventListener('keypress', e => e.key === 'Enter' && searchByTitle());
+document.getElementById('directSearchInput')?.addEventListener('keypress', e => e.key === 'Enter' && searchDirect());
 </script>
 </body>
 </html>
