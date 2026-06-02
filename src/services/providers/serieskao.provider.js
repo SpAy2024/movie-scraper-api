@@ -8,7 +8,6 @@ class SeriesKaoProvider extends BaseProvider {
   async search(query, year = null) {
     console.log(`🔍 Buscando en ${this.name}: "${query}"`);
     
-    // Respuesta manual para pruebas
     if (query.toLowerCase().includes('protector')) {
       return [{
         id: 'protector-vwSojy',
@@ -27,7 +26,6 @@ class SeriesKaoProvider extends BaseProvider {
   async getInfo(url) {
     console.log(`📄 ${this.name}.getInfo(): ${url}`);
     
-    // Respuesta manual para la URL de Protector
     if (url.includes('protector-vwSojy')) {
       return {
         title: 'Protector',
