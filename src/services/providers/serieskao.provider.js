@@ -3,117 +3,88 @@ const BaseProvider = require('./BaseProvider');
 class SeriesKaoProvider extends BaseProvider {
   constructor() {
     super('serieskao', 'https://serieskao.top', '/');
+    
+    // Mapeo de títulos a URLs directas (slug real)
+    this.directUrls = {
+      'protector': 'protector-vwSojy',
+      'instinto implacable': 'protector-vwSojy',
+      'brasil 70': 'brasil-70-la-saga-del-tricampe-F5YTVU',
+      'obsolete': 'obsolete-QhGzwp',
+      'canción del samurái': 'la-cancion-del-samurai-VHYQJi'
+    };
   }
 
   async search(query, year = null) {
     console.log(`🔍 Buscando en ${this.name}: "${query}"`);
     
-    // Generar slug a partir de la consulta
-    const slug = this.generateSlug(query);
+    const queryLower = query.toLowerCase().trim();
+    const movies = [];
     
-    // Construir URL directa de la película
+    // 1. Buscar en el mapeo de URLs directas
+    let slug = null;
+    for (const [key, value] of Object.entries(this.directUrls)) {
+      if (queryLower === key || queryLower.includes(key)) {
+        slug = value;
+        console.log(`   🎯 Mapeo encontrado: "${key}" -> ${slug}`);
+        break;
+      }
+    }
+    
+    // 2. Si no hay mapeo, generar slug automático
+    if (!slug) {
+      slug = this.generateSlug(queryLower);
+    }
+    
+    // 3. Probar URL directa
     const directUrl = `${this.baseURL}/pelicula/${slug}`;
     console.log(`🌐 Probando URL directa: ${directUrl}`);
     
     const $ = await this.fetchHTML(directUrl);
     
     if ($) {
-      // Verificar si la página existe (no es 404)
-      const title = $('h1').first().text().trim();
-      const errorMsg = $('body').text().includes('404') || $('body').text().includes('No encontrado');
+      const title = $('.detail-hero__title, h1').first().text().trim();
+      const has404 = $('body').text().includes('404') || $('body').text().includes('No encontrado');
       
-      if (title && !errorMsg && title.length > 2) {
+      if (title && !has404 && title.length > 2) {
         console.log(`✅ Encontrado: ${title}`);
         
-        // Extraer año
         let itemYear = null;
-        const yearMatch = title.match(/\b(19|20)\d{2}\b/);
-        if (yearMatch) itemYear = yearMatch[0];
+        $('.detail-hero__meta span').each((i, el) => {
+          const text = $(el).text().trim();
+          if (/^\d{4}$/.test(text)) itemYear = text;
+        });
         
-        // Extraer thumbnail
-        let thumbnail = $('.detail-hero__poster img').first().attr('src');
-        if (!thumbnail) thumbnail = $('img').first().attr('src');
+        const thumbnail = $('.detail-hero__poster img').first().attr('src');
         
-        return [{
+        movies.push({
           id: null,
           title: title,
-          year: itemYear || year,
+          year: itemYear,
           url: directUrl,
           thumbnail: thumbnail,
           provider: this.name,
           type: 'movie',
           relevance: 100
-        }];
+        });
+        
+        return movies;
       }
     }
     
-    // Si no se encuentra con el slug directo, intentar búsqueda normal
-    console.log(`⚠️ No encontrado con URL directa, intentando búsqueda...`);
-    return await this.searchViaApi(query, year);
-  }
-  
-  async searchViaApi(query, year = null) {
-    const searchUrl = `${this.baseURL}/search?s=${encodeURIComponent(query)}`;
-    console.log(`🔍 Buscando vía API: ${searchUrl}`);
-    
-    const $ = await this.fetchHTML(searchUrl);
-    if (!$) return [];
-    
-    const movies = [];
-    const queryLower = query.toLowerCase();
-    
-    // Buscar enlaces a películas
-    $('a[href*="/pelicula/"]').each((i, el) => {
-      let url = $(el).attr('href');
-      if (!url || !url.includes('/pelicula/')) return;
-      
-      let title = $(el).find('.card__title, h4, h3').text().trim();
-      if (!title) title = $(el).attr('title');
-      if (!title) title = $(el).text().trim();
-      
-      if (title && title.toLowerCase().includes(queryLower)) {
-        const fullUrl = url.startsWith('http') ? url : this.baseURL + url;
-        movies.push({
-          id: null,
-          title: title,
-          year: null,
-          url: fullUrl,
-          thumbnail: $(el).find('img').first().attr('src'),
-          provider: this.name,
-          type: 'movie'
-        });
-      }
-    });
-    
-    console.log(`✅ ${this.name}: ${movies.length} resultados por búsqueda`);
-    return movies;
+    console.log(`⚠️ No se encontró "${query}" en SeriesKao`);
+    return [];
   }
   
   generateSlug(text) {
     if (!text) return '';
     
-    // Normalizar: minúsculas, sin acentos, espacios a guiones
-    let slug = text
+    return text
       .toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .trim();
-    
-    // Casos especiales
-    const specialCases = {
-      'protector': 'protector-vwSojy',
-      'instinto-implacable': 'protector-vwSojy',
-      'brasil-70-la-saga-del-tricampeonato': 'brasil-70-la-saga-del-tricampe-F5YTVU'
-    };
-    
-    if (specialCases[slug]) {
-      console.log(`   🎯 Usando slug especial: ${specialCases[slug]}`);
-      return specialCases[slug];
-    }
-    
-    return slug;
   }
 
   async getInfo(url) {
