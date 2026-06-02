@@ -1,4 +1,3 @@
-// src/utils/streamwish-resolver.js
 const { axiosGet } = require('./resolver-helpers');
 const { unpack, detect } = require('unpacker');
 const { URL } = require('url');
@@ -16,7 +15,7 @@ function best(master, base) {
       const next = lines[i + 1]?.trim();
       if (!next || next.startsWith('#')) continue;
 
-      const score = m[1] * m[2];
+      const score = parseInt(m[1]) * parseInt(m[2]);
       if (score > bestScore) {
         bestScore = score;
         bestUrl = new URL(next, base).href;

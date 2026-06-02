@@ -1,11 +1,15 @@
-// src/routes/movies.routes.js
 const express = require('express');
 const { requireApiKey } = require('../middleware/auth');
 const { dailyRateLimit } = require('../middleware/rate-limit');
 const movieService = require('../services/movie.service');
 const downloadService = require('../services/download.service');
 const { ApiError } = require('../utils/api-error');
-const { validateSearchQuery, validateInfoQuery } = require('../validators/movies.validator');
+const {
+  validateSearchQuery,
+  validateInfoQuery,
+  validateDownloadRequest,
+  validateBatchRequest
+} = require('../validators/movies.validator');
 
 const router = express.Router();
 
@@ -19,7 +23,7 @@ function asyncHandler(handler) {
   };
 }
 
-// Middleware global para estas rutas
+// Middleware global
 router.use(requireApiKey, dailyRateLimit);
 
 // 1. Búsqueda de películas
@@ -31,6 +35,7 @@ router.get('/search', validateSearchQuery, asyncHandler(async (req, res) => {
     success: true,
     query: q,
     provider: provider || 'all',
+    year: year || null,
     results,
   });
 }));
@@ -46,7 +51,7 @@ router.get('/info', validateInfoQuery, asyncHandler(async (req, res) => {
   });
 }));
 
-// 3. Obtener servidores de una URL específica
+// 3. Obtener servidores de una URL
 router.get('/servers', asyncHandler(async (req, res) => {
   const { url, provider } = req.query;
   
@@ -62,8 +67,8 @@ router.get('/servers', asyncHandler(async (req, res) => {
   });
 }));
 
-// 4. Iniciar descarga
-router.post('/download', asyncHandler(async (req, res) => {
+// 4. Iniciar descarga individual
+router.post('/download', validateDownloadRequest, asyncHandler(async (req, res) => {
   const baseUrl = `${req.protocol}://${req.get('host')}`;
   const downloadData = downloadService.createDownload(req.body, baseUrl);
   
@@ -77,6 +82,10 @@ router.post('/download', asyncHandler(async (req, res) => {
 router.get('/download/:id', asyncHandler(async (req, res) => {
   const data = downloadService.getDownload(req.params.id);
   
+  if (!data) {
+    throw new ApiError(404, 'Descarga no encontrada');
+  }
+  
   res.status(200).json({
     success: true,
     data,
@@ -84,7 +93,7 @@ router.get('/download/:id', asyncHandler(async (req, res) => {
 }));
 
 // 6. Descarga por lotes
-router.post('/batch-download', asyncHandler(async (req, res) => {
+router.post('/batch-download', validateBatchRequest, asyncHandler(async (req, res) => {
   const baseUrl = `${req.protocol}://${req.get('host')}`;
   const batchData = downloadService.createBatch(req.body, baseUrl);
   
@@ -98,9 +107,24 @@ router.post('/batch-download', asyncHandler(async (req, res) => {
 router.get('/batch/:id', asyncHandler(async (req, res) => {
   const data = downloadService.getBatch(req.params.id);
   
+  if (!data) {
+    throw new ApiError(404, 'Lote no encontrado');
+  }
+  
   res.status(200).json({
     success: true,
     data,
+  });
+}));
+
+// 8. Proveedores disponibles
+router.get('/providers', asyncHandler(async (req, res) => {
+  const providers = movieService.getAvailableProviders();
+  
+  res.status(200).json({
+    success: true,
+    providers,
+    total: providers.length,
   });
 }));
 

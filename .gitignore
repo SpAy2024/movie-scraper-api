@@ -1,36 +1,7 @@
-# Dependencias
 node_modules/
-package-lock.json
-
-# Variables de entorno
-.env
-.env.local
-.env.*.local
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-
-# Archivos de descargas
 downloads/
-*.mp4
-*.mkv
-*.avi
-
-# Configuración de IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Archivos de sistema
+.env
+*.log
 .DS_Store
-Thumbs.db
-
-# Puppeteer
-.chromium/
-
-# Build
 dist/
 build/
