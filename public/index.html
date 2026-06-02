@@ -1072,60 +1072,75 @@ async function getMovieAndServers(tmdbId) {
     }
 }
 
-
 async function playMovie(url, title, provider) {
-    console.log('🎬 playMovie:', { url, title, provider });
+    console.log('🎬 playMovie llamado:', { url, title, provider });
     
     const modal = document.getElementById('modal');
     const modalBody = document.getElementById('modalBody');
     
     modalBody.innerHTML = '<div class="loading-spinner"></div>';
     modal.style.display = 'block';
-
+    
     try {
-        // Llamar al endpoint /info
-        const infoResponse = await fetchWithAuth(`${API_URL}/info?url=${encodeURIComponent(url)}`);
-        const infoData = await infoResponse.json();
+        // Llamar directamente al endpoint /info con la API Key
+        const response = await fetch(`${API_URL}/info?url=${encodeURIComponent(url)}&apiKey=${API_KEY}`);
+        const result = await response.json();
         
-        console.log('📦 infoData recibido:', infoData);
+        console.log('Respuesta del backend:', result);
         
-        // Verificar si hay datos
-        if (!infoData.success || !infoData.data) {
-            throw new Error('No se recibieron datos de la película');
+        if (!result.success || !result.data) {
+            throw new Error('No se recibieron datos');
         }
         
-        const movie = infoData.data;
+        const movie = result.data;
         
-        // Renderizar el modal con la información
-        renderMovieModal(movie);
+        // Construir el HTML del modal directamente
+        modalBody.innerHTML = `
+            <div class="video-container">
+                <div id="playerFrame" style="display: flex; align-items: center; justify-content: center; height: 56vh; background: #000; color: #888;">
+                    Selecciona un servidor para reproducir
+                </div>
+            </div>
+            <div class="modal-info">
+                <h2>${movie.title}</h2>
+                <div class="modal-meta">
+                    ${movie.year ? `<span>📅 ${movie.year}</span>` : ''}
+                </div>
+                <div class="modal-synopsis">${movie.synopsis || 'Sinopsis no disponible'}</div>
+                <div class="servers-section">
+                    <div class="servers-title">🎬 SERVIDORES DISPONIBLES</div>
+                    <div class="servers-grid" id="serversGridModal"></div>
+                </div>
+            </div>
+        `;
         
-        // Mostrar servidores si existen
+        // Agregar los botones de servidores
+        const serversGrid = document.getElementById('serversGridModal');
         if (movie.downloadLinks && movie.downloadLinks.length > 0) {
-            addServersToModal([{ provider: provider, servers: movie.downloadLinks }]);
+            movie.downloadLinks.forEach(server => {
+                const btn = document.createElement('button');
+                btn.className = 'server-btn';
+                btn.textContent = server.server || 'Servidor';
+                btn.onclick = () => {
+                    const playerFrame = document.getElementById('playerFrame');
+                    playerFrame.innerHTML = `<iframe src="${server.url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
+                };
+                serversGrid.appendChild(btn);
+            });
         } else {
-            const serversSection = document.getElementById('serversSection');
-            if (serversSection) {
-                serversSection.innerHTML = `
-                    <div class="no-results">
-                        ⚠️ No se encontraron servidores<br>
-                        <a href="${url}" target="_blank" class="server-btn">🔗 Abrir enlace directamente</a>
-                    </div>
-                `;
-            }
+            serversGrid.innerHTML = '<div class="no-results">⚠️ No hay servidores disponibles</div>';
         }
         
     } catch (error) {
-        console.error('Error en playMovie:', error);
+        console.error('Error:', error);
         modalBody.innerHTML = `
             <div class="no-results">
-                ❌ ${error.message}<br>
-                <a href="${url}" target="_blank" class="server-btn">🔗 Abrir enlace directamente</a>
+                ❌ Error: ${error.message}<br>
                 <button onclick="closeModal()" class="server-btn">Cerrar</button>
             </div>
         `;
     }
 }
-
 
 function renderMovieModal(movie) {
     const modalBody = document.getElementById('modalBody');
