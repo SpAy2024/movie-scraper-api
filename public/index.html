@@ -1151,6 +1151,7 @@ function renderMovieModal(movie) {
     `;
 }
 
+
 function addServersToModal(serversList) {
     const serversSection = document.getElementById('serversSection');
     if (!serversSection) return;
@@ -1177,19 +1178,19 @@ function addServersToModal(serversList) {
             const btn = document.createElement('button');
             btn.className = 'server-btn';
             btn.textContent = server.server || `Servidor ${idx + 1}`;
-            btn.setAttribute('data-url', server.url || '');
+            
+            // Construir URL completa si es relativa
+            let url = server.url || '';
+            if (url.startsWith('/')) {
+                url = 'https://serieskao.top' + url;
+            }
+            btn.setAttribute('data-url', url);
             
             btn.onclick = function(e) {
                 e.preventDefault();
-                const url = this.getAttribute('data-url');
-                console.log(`🎬 Click en servidor: ${server.server || 'Servidor'} - URL: ${url}`);
-                
-                if (!url) {
-                    alert('No hay URL disponible para este servidor');
-                    return;
-                }
-                
-                openPlayer(url);
+                const videoUrl = this.getAttribute('data-url');
+                console.log(`🎬 Click en servidor: ${server.server} - URL: ${videoUrl}`);
+                openPlayer(videoUrl);
                 document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
             };
@@ -1212,47 +1213,58 @@ async function openPlayer(url) {
     
     playerFrame.style.display = 'block';
     
-    if (url.includes('estrenoscinesaa.com/links/')) {
+    // Convertir URL relativa a absoluta si es necesario
+    let finalUrl = url;
+    if (url.startsWith('/')) {
+        finalUrl = 'https://serieskao.top' + url;
+        console.log(`🔄 URL relativa convertida: ${finalUrl}`);
+    }
+    
+    // Caso 1: Es un enlace de estrenoscinesaa.com/links/
+    if (finalUrl.includes('estrenoscinesaa.com/links/')) {
         console.log('🔄 Resolviendo enlace de estrenoscinesaa...');
         playerFrame.innerHTML = '<div class="loading-spinner"></div>';
         
         try {
             const response = await fetchWithAuth('/api/v1/movies/resolve-link', {
                 method: 'POST',
-                body: JSON.stringify({ url: url })
+                body: JSON.stringify({ url: finalUrl })
             });
             const data = await response.json();
             
             if (data.success && data.resolvedUrl) {
-                console.log('✅ Enlace resuelto:', data.resolvedUrl);
                 window.open(data.resolvedUrl, '_blank');
                 playerFrame.innerHTML = `
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px; text-align: center; padding: 20px;">
-                        <p style="color: #fff; font-size: 16px;">El contenido se abrirá en una nueva pestaña</p>
-                        <button onclick="window.open('${data.resolvedUrl}', '_blank')" class="server-btn" style="padding: 12px 24px; font-size: 16px;">
-                            🔗 Abrir enlace
-                        </button>
+                        <p style="color: #fff;">El contenido se abrirá en una nueva pestaña</p>
+                        <button onclick="window.open('${data.resolvedUrl}', '_blank')" class="server-btn">🔗 Abrir enlace</button>
                     </div>
                 `;
             } else {
                 throw new Error('No se pudo resolver el enlace');
             }
         } catch (error) {
-            console.error('❌ Error:', error);
-            playerFrame.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px; text-align: center; padding: 20px;">
-                    <p style="color: #ff4444;">No se pudo resolver el enlace</p>
-                    <button onclick="window.open('${url}', '_blank')" class="server-btn">🔗 Abrir directamente</button>
-                </div>
-            `;
+            playerFrame.innerHTML = `<iframe src="${finalUrl}" frameborder="0" allowfullscreen style="width:100%; height:100%;"></iframe>`;
         }
-    } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
-        let videoId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
+    }
+    // Caso 2: VidURL de SeriesKao (Embed69)
+    else if (finalUrl.includes('/vidurl/') || finalUrl.includes('serieskao.top/vidurl/')) {
+        console.log('🎬 Cargando reproductor Embed69 de SeriesKao');
+        // Cargar la URL directamente en el iframe
+        playerFrame.innerHTML = `<iframe src="${finalUrl}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width: 100%; height: 100%;"></iframe>`;
+    }
+    // Caso 3: YouTube
+    else if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be')) {
+        let videoId = finalUrl.split('v=')[1]?.split('&')[0] || finalUrl.split('/').pop();
         playerFrame.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
-    } else if (url.includes('.mp4') || url.includes('.m3u8') || url.includes('.mkv')) {
-        playerFrame.innerHTML = `<video controls autoplay style="width: 100%; height: 100%;"><source src="${url}" type="video/mp4"></video>`;
-    } else {
-        playerFrame.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
+    }
+    // Caso 4: Video directo
+    else if (finalUrl.includes('.mp4') || finalUrl.includes('.m3u8') || finalUrl.includes('.mkv')) {
+        playerFrame.innerHTML = `<video controls autoplay style="width: 100%; height: 100%;"><source src="${finalUrl}" type="video/mp4"></video>`;
+    }
+    // Caso 5: Otros iframes
+    else {
+        playerFrame.innerHTML = `<iframe src="${finalUrl}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width: 100%; height: 100%;"></iframe>`;
     }
 }
 
