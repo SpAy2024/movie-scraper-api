@@ -1,41 +1,35 @@
 // ============================================================
 // PROVEEDORES QUE FUNCIONAN (ACTIVOS)
 // ============================================================
+const SololatinoProvider = require('../providers/sololatino.provider');
+const RePelishdProvider = require('../providers/repelishd.provider');
+const PeliCineHDProvider = require('../providers/pelicinehd.provider');
+const VerPelisTVProvider = require('../providers/verpelistv.provider');
+const PelisPlusHDProvider = require('../providers/pelisplushd.provider');
 const EstrenosCinesaaProvider = require('../providers/estrenoscinesaa.provider');
+const PeliHDProvider = require('../providers/pelihd.provider');
+const DeTodoPeliculasProvider = require('../providers/detodopeliculas.provider');
 const CineCalidadProvider = require('../providers/cinecalidad.provider');
-
-// ============================================================
-// PROVEEDORES CAÍDOS O INESTABLES (COMENTADOS)
-// ============================================================
-// const SololatinoProvider = require('../providers/sololatino.provider');
- const RePelishdProvider = require('../providers/repelishd.provider');
- const PeliCineHDProvider = require('../providers/pelicinehd.provider');
-// const VerPelisTVProvider = require('../providers/verpelistv.provider');
- const PelisPlusHDProvider = require('../providers/pelisplushd.provider');
- const PeliHDProvider = require('../providers/pelihd.provider');
- const DeTodoPeliculasProvider = require('../providers/detodopeliculas.provider');
- const PelisPlusHD1Provider = require('../providers/pelisplushd1.provider');
-// const LaMovieProvider = require('../providers/lamovie.provider');
- const SeriesKaoProvider = require('../providers/serieskao.provider');
- const CineCalidadAMProvider = require('../providers/cinecalidadam.provider');
-
+const PelisPlusHD1Provider = require('../providers/pelisplushd1.provider');
+// const CineCalidadAMProvider = require('../providers/cinecalidadam.provider'); // ❌ ELIMINADO
+const LaMovieProvider = require('../providers/lamovie.provider');
+const SeriesKaoProvider = require('../providers/serieskao.provider');
 class MovieService {
     constructor() {
         this.providers = {
             // ========== PROVEEDORES ACTIVOS ==========
+            sololatino: new SololatinoProvider(),
+            repelishd: new RePelishdProvider(),
+            pelicinehd: new PeliCineHDProvider(),
+            verpelistv: new VerPelisTVProvider(),
+            pelisplushd: new PelisPlusHDProvider(),
             estrenoscinesaa: new EstrenosCinesaaProvider(),
+            pelihd: new PeliHDProvider(),
+            detodopeliculas: new DeTodoPeliculasProvider(),
             cinecalidad: new CineCalidadProvider(),
-            
-            // ========== PROVEEDORES CAÍDOS (COMENTADOS) ==========
-            // sololatino: new SololatinoProvider(),
-             repelishd: new RePelishdProvider(),
-             pelicinehd: new PeliCineHDProvider(),
-            // verpelistv: new VerPelisTVProvider(),
-             pelisplushd: new PelisPlusHDProvider(),
-             pelihd: new PeliHDProvider(),
-             detodopeliculas: new DeTodoPeliculasProvider(),
-             pelisplushd1: new PelisPlusHD1Provider(),
-            // lamovie: new LaMovieProvider(),
+            pelisplushd1: new PelisPlusHD1Provider(),
+            // cinecalidadam: new CineCalidadAMProvider(), // ❌ ELIMINADO
+            lamovie: new LaMovieProvider(),
             serieskao: new SeriesKaoProvider(),
         };
     }
