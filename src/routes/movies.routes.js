@@ -1,399 +1,107 @@
-const router = require('express').Router();
+// src/routes/movies.routes.js
+const express = require('express');
+const { requireApiKey } = require('../middleware/auth');
+const { dailyRateLimit } = require('../middleware/rate-limit');
 const movieService = require('../services/movie.service');
+const downloadService = require('../services/download.service');
+const { ApiError } = require('../utils/api-error');
+const { validateSearchQuery, validateInfoQuery } = require('../validators/movies.validator');
 
-// Endpoint de búsqueda
-router.get('/search', async (req, res) => {
-    const { q, provider } = req.query;
+const router = express.Router();
 
-    if (!q) {
-        return res.status(400).json({ 
-            error: 'El parámetro "q" (término de búsqueda) es requerido',
-            ejemplo: '/api/v1/movies/search?q=batman'
-        });
-    }
-
+function asyncHandler(handler) {
+  return async (req, res, next) => {
     try {
-        const results = await movieService.searchAll(q, provider);
-        res.json({
-            success: true,
-            query: q,
-            provider_used: provider || 'all',
-            results,
-            timestamp: new Date().toISOString(),
-        });
+      await handler(req, res, next);
     } catch (error) {
-        console.error('Error en /search:', error);
-        res.status(500).json({ 
-            error: 'Error interno al realizar la búsqueda', 
-            details: error.message 
-        });
+      next(error);
     }
-});
+  };
+}
 
-// Endpoint de información
-router.get('/info', async (req, res) => {
-    const { url } = req.query;
+// Middleware global para estas rutas
+router.use(requireApiKey, dailyRateLimit);
 
-    if (!url) {
-        return res.status(400).json({ 
-            error: 'El parámetro "url" es requerido',
-            ejemplo: '/api/v1/movies/info?url=https://sololatino.net/pelicula/ejemplo'
-        });
-    }
+// 1. Búsqueda de películas
+router.get('/search', validateSearchQuery, asyncHandler(async (req, res) => {
+  const { q, provider, year } = req.query;
+  const results = await movieService.searchAll(q, provider, year);
+  
+  res.status(200).json({
+    success: true,
+    query: q,
+    provider: provider || 'all',
+    results,
+  });
+}));
 
-    try {
-        const movieInfo = await movieService.getMovieInfo(url);
-        if (!movieInfo) {
-            return res.status(404).json({ error: 'No se pudo obtener información de la película' });
-        }
-        res.json({ success: true, data: movieInfo });
-    } catch (error) {
-        console.error('Error en /info:', error);
-        res.status(500).json({ 
-            error: 'Error interno al obtener la información', 
-            details: error.message 
-        });
-    }
-});
+// 2. Información de película
+router.get('/info', validateInfoQuery, asyncHandler(async (req, res) => {
+  const { url } = req.query;
+  const info = await movieService.getMovieInfo(url);
+  
+  res.status(200).json({
+    success: true,
+    data: info,
+  });
+}));
 
-// Endpoint para obtener proveedores disponibles
-router.get('/providers', (req, res) => {
-    res.json({ 
-        providers: movieService.getAvailableProviders(),
-        total: movieService.getAvailableProviders().length 
-    });
-});
+// 3. Obtener servidores de una URL específica
+router.get('/servers', asyncHandler(async (req, res) => {
+  const { url, provider } = req.query;
+  
+  if (!url || !provider) {
+    throw new ApiError(400, 'Se requieren los parámetros "url" y "provider"');
+  }
+  
+  const servers = await movieService.getMovieServers(url, provider);
+  
+  res.status(200).json({
+    success: true,
+    servers,
+  });
+}));
 
-// Endpoint para obtener TODOS los servidores de una película
-router.get('/servers', async (req, res) => {
-    const { url, provider } = req.query;
-    
-    if (!url) {
-        return res.status(400).json({ error: 'Se requiere la URL de la película' });
-    }
-    
-    if (!provider) {
-        return res.status(400).json({ error: 'Se requiere el nombre del proveedor' });
-    }
-    
-    try {
-        const serverResolver = require('../services/server-resolver.service');
-        
-        const servidores = await serverResolver.extraerServidores(url, provider);
-        
-        const iframes = servidores.filter(s => s.tipo === 'iframe');
-        const descargas = servidores.filter(s => s.tipo === 'descarga');
-        
-        res.json({
-            success: true,
-            url: url,
-            provider: provider,
-            total: servidores.length,
-            servidores: {
-                iframes: iframes,
-                descargas: descargas
-            }
-        });
-        
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
+// 4. Iniciar descarga
+router.post('/download', asyncHandler(async (req, res) => {
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
+  const downloadData = downloadService.createDownload(req.body, baseUrl);
+  
+  res.status(200).json({
+    success: true,
+    data: downloadData,
+  });
+}));
 
-// Endpoint unificado: busca en TMDB y luego en proveedores
-router.get('/search-with-tmdb', async (req, res) => {
-    const { title, year } = req.query;
-    
-    if (!title) {
-        return res.status(400).json({ error: 'Se requiere el parámetro "title"' });
-    }
-    
-    try {
-        const tmdbService = require('../services/tmdb.service');
-        const result = await tmdbService.searchAndFindInProviders(title, year);
-        
-        res.json({
-            success: result.success,
-            query: { title, year },
-            tmdb: result.tmdb,
-            providers: result.providers,
-            servers: result.servers,
-            totalServers: result.totalServers
-        });
-        
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
+// 5. Estado de descarga
+router.get('/download/:id', asyncHandler(async (req, res) => {
+  const data = downloadService.getDownload(req.params.id);
+  
+  res.status(200).json({
+    success: true,
+    data,
+  });
+}));
 
-// Endpoint: buscar solo en TMDB
-router.get('/tmdb/search', async (req, res) => {
-    const { title, year, language } = req.query;
-    
-    if (!title) {
-        return res.status(400).json({ error: 'Se requiere el parámetro "title"' });
-    }
-    
-    try {
-        const tmdbService = require('../services/tmdb.service');
-        const result = await tmdbService.searchMovie(title, year, language || 'es');
-        
-        res.json(result);
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+// 6. Descarga por lotes
+router.post('/batch-download', asyncHandler(async (req, res) => {
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
+  const batchData = downloadService.createBatch(req.body, baseUrl);
+  
+  res.status(200).json({
+    success: true,
+    data: batchData,
+  });
+}));
 
-// Endpoint: obtener película por ID de TMDB
-router.get('/tmdb/movie/:id', async (req, res) => {
-    const { id } = req.params;
-    const { language } = req.query;
-    
-    try {
-        const tmdbService = require('../services/tmdb.service');
-        const result = await tmdbService.getMovieById(id, language || 'es');
-        
-        res.json(result);
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Endpoint: buscar por actor/actriz
-router.get('/tmdb/search-by-person', async (req, res) => {
-    const { name, language } = req.query;
-    
-    if (!name) {
-        return res.status(400).json({ error: 'Se requiere el parámetro "name"' });
-    }
-    
-    try {
-        const tmdbService = require('../services/tmdb.service');
-        const result = await tmdbService.searchByPerson(name, language || 'es');
-        res.json(result);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Endpoint: buscar por género
-router.get('/tmdb/search-by-genre', async (req, res) => {
-    const { genreId, page, language } = req.query;
-    
-    if (!genreId) {
-        return res.status(400).json({ error: 'Se requiere el parámetro "genreId"' });
-    }
-    
-    try {
-        const tmdbService = require('../services/tmdb.service');
-        const result = await tmdbService.searchByGenre(genreId, page || 1, language || 'es');
-        res.json(result);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Endpoint: obtener lista de géneros
-router.get('/tmdb/genres', async (req, res) => {
-    const { language } = req.query;
-    
-    try {
-        const tmdbService = require('../services/tmdb.service');
-        const result = await tmdbService.getGenres(language || 'es');
-        res.json(result);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-
-// Endpoint para resolver un enlace de descarga
-// Endpoint para resolver enlaces de estrenoscinesaa
-router.post('/resolve-link', async (req, res) => {
-    const { url } = req.body;
-    
-    if (!url) {
-        return res.status(400).json({ error: 'Se requiere la URL' });
-    }
-    
-    try {
-        const axios = require('axios');
-        const cheerio = require('cheerio');
-        
-        console.log(`🔍 Resolviendo enlace: ${url}`);
-        
-        // Seguir redirecciones
-        let currentUrl = url;
-        let maxRedirects = 10;
-        let redirectCount = 0;
-        
-        while (redirectCount < maxRedirects) {
-            const response = await axios.get(currentUrl, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                },
-                maxRedirects: 0,
-                validateStatus: status => status < 400 || status === 302
-            });
-            
-            // Si hay redirección
-            if (response.headers.location) {
-                currentUrl = response.headers.location;
-                redirectCount++;
-                continue;
-            }
-            
-            // Buscar iframe en el HTML
-            const $ = cheerio.load(response.data);
-            const iframe = $('iframe').first().attr('src');
-            if (iframe && iframe.startsWith('http')) {
-                return res.json({ success: true, resolvedUrl: iframe });
-            }
-            
-            // Buscar meta refresh
-            const metaRefresh = $('meta[http-equiv="refresh"]').attr('content');
-            if (metaRefresh) {
-                const match = metaRefresh.match(/url=(.+)$/i);
-                if (match) {
-                    currentUrl = match[1];
-                    redirectCount++;
-                    continue;
-                }
-            }
-            
-            break;
-        }
-        
-        // Si no se encontró iframe, devolver la URL final
-        res.json({ success: true, resolvedUrl: currentUrl });
-        
-    } catch (error) {
-        console.error('Error resolviendo enlace:', error.message);
-        res.json({ success: false, error: error.message });
-    }
-});
-
-
-// Endpoint para buscar servidores en múltiples fuentes
-router.get('/multi-search', async (req, res) => {
-    const { title, titleEnglish } = req.query;
-    
-    if (!title) {
-        return res.status(400).json({ error: 'Se requiere el parámetro "title"' });
-    }
-    
-    try {
-        const multiProvider = require('../services/multi-provider.service');
-        const servidores = await multiProvider.buscarServidoresMultiplesFuentes(title, titleEnglish || '');
-        
-        res.json({
-            success: true,
-            title: title,
-            total: servidores.length,
-            servers: servidores
-        });
-    } catch (error) {
-        console.error('Error en multi-search:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-
-
-// Endpoint para descargar directamente desde un enlace resuelto
-router.post('/download-from-link', async (req, res) => {
-    const { url, filename } = req.body;
-    
-    if (!url) {
-        return res.status(400).json({ error: 'Se requiere la URL del archivo' });
-    }
-    
-    try {
-        const resolverService = require('../services/resolver.service');
-        const finalFilename = filename || `movie_${Date.now()}.mp4`;
-        
-        // Primero resolver si es necesario
-        let downloadUrl = url;
-        if (url.includes('estrenoscinesaa.com/links/')) {
-            downloadUrl = await resolverService.resolveEstrenosCinesaa(url);
-        }
-        
-        // Iniciar descarga (en background para no timeout)
-        resolverService.download(downloadUrl, finalFilename, (percent) => {
-            console.log(`📥 Progreso: ${percent.toFixed(2)}%`);
-        }).then(outputPath => {
-            console.log(`✅ Descarga completada: ${outputPath}`);
-        }).catch(err => {
-            console.error(`❌ Error en descarga:`, err.message);
-        });
-        
-        res.json({
-            success: true,
-            message: 'Descarga iniciada en segundo plano',
-            filename: finalFilename,
-            downloadUrl: downloadUrl,
-        });
-        
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            error: 'Error al iniciar descarga',
-            details: error.message,
-        });
-    }
-});
-
-// Nuevo endpoint: búsqueda con resolución automática
-router.get('/search-and-resolve', async (req, res) => {
-    const { q, provider } = req.query;
-    
-    if (!q) {
-        return res.status(400).json({ error: 'Se requiere el parámetro "q"' });
-    }
-    
-    try {
-        const movieService = require('../services/movie.service');
-        const results = await movieService.searchAndResolve(q, provider);
-        
-        res.json({
-            success: true,
-            query: q,
-            results: results,
-            message: 'Los enlaces han sido resueltos automáticamente para reproducción'
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Endpoint para obtener stream directo de una película
-router.get('/stream', async (req, res) => {
-    const { url } = req.query;
-    
-    if (!url) {
-        return res.status(400).json({ error: 'Se requiere la URL de la película' });
-    }
-    
-    try {
-        const movieService = require('../services/movie.service');
-        const movieData = await movieService.getMovieWithStreamUrl(url);
-        
-        res.json({
-            success: true,
-            title: movieData.title,
-            streamUrl: movieData.streamUrl,
-            quality: movieData.quality,
-            size: movieData.size,
-            provider: movieData.provider
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
+// 7. Estado de lote
+router.get('/batch/:id', asyncHandler(async (req, res) => {
+  const data = downloadService.getBatch(req.params.id);
+  
+  res.status(200).json({
+    success: true,
+    data,
+  });
+}));
 
 module.exports = router;
