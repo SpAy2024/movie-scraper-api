@@ -278,6 +278,31 @@ router.post('/resolve-link', async (req, res) => {
 });
 
 
+// Endpoint para buscar servidores en múltiples fuentes
+router.get('/multi-search', async (req, res) => {
+    const { title, titleEnglish } = req.query;
+    
+    if (!title) {
+        return res.status(400).json({ error: 'Se requiere el parámetro "title"' });
+    }
+    
+    try {
+        const multiProvider = require('../services/multi-provider.service');
+        const servidores = await multiProvider.buscarServidoresMultiplesFuentes(title, titleEnglish || '');
+        
+        res.json({
+            success: true,
+            title: title,
+            total: servidores.length,
+            servers: servidores
+        });
+    } catch (error) {
+        console.error('Error en multi-search:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 
 // Endpoint para descargar directamente desde un enlace resuelto
 router.post('/download-from-link', async (req, res) => {
