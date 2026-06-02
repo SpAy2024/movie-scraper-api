@@ -8,43 +8,55 @@ class SeriesKaoProvider extends BaseProvider {
   async search(query, year = null) {
     console.log(`🔍 Buscando en ${this.name}: "${query}"`);
     
-    // Construir slug a partir de la consulta
-    const slug = this.generateSlug(query);
-    const directUrl = `${this.baseURL}/pelicula/${slug}`;
+    // Usar el buscador de SeriesKao
+    const searchUrl = `${this.baseURL}/search?s=${encodeURIComponent(query)}`;
+    console.log(`🌐 Buscando en: ${searchUrl}`);
     
-    console.log(`🌐 Probando URL: ${directUrl}`);
+    const $ = await this.fetchHTML(searchUrl);
+    if (!$) {
+      console.log('❌ No se pudo cargar la página de búsqueda');
+      return [];
+    }
     
-    const $ = await this.fetchHTML(directUrl);
+    const movies = [];
+    const queryLower = query.toLowerCase();
     
-    if ($) {
-      const title = $('.detail-hero__title, h1').first().text().trim();
-      const errorMsg = $('body').text().includes('404') || $('body').text().includes('No encontrado');
+    // Buscar enlaces a películas
+    $('a[href*="/pelicula/"]').each((i, el) => {
+      let url = $(el).attr('href');
+      if (!url || !url.includes('/pelicula/')) return;
       
-      if (title && !errorMsg && title.length > 2) {
-        console.log(`✅ Encontrada: ${title}`);
+      let title = $(el).find('.card__title, h4, h3').text().trim();
+      if (!title) title = $(el).attr('title');
+      if (!title) title = $(el).find('img').attr('alt');
+      if (!title) return;
+      
+      // Verificar que el título coincida con la búsqueda
+      if (title.toLowerCase().includes(queryLower) || queryLower.includes(title.toLowerCase())) {
+        const fullUrl = url.startsWith('http') ? url : this.baseURL + url;
+        const thumbnail = $(el).find('img').first().attr('src');
         
+        // Extraer año si está disponible
         let itemYear = null;
-        $('.detail-hero__meta span').each((i, el) => {
-          const text = $(el).text().trim();
-          if (/^\d{4}$/.test(text)) itemYear = text;
-        });
+        const yearMatch = title.match(/\b(19|20)\d{2}\b/);
+        if (yearMatch) itemYear = yearMatch[0];
         
-        const thumbnail = $('.detail-hero__poster img').first().attr('src');
+        console.log(`   ✅ Encontrada: ${title}`);
         
-        return [{
-          id: slug,
+        movies.push({
+          id: null,
           title: title,
-          year: itemYear || year,
-          url: directUrl,
+          year: itemYear,
+          url: fullUrl,
           thumbnail: thumbnail,
           provider: this.name,
           type: 'movie'
-        }];
+        });
       }
-    }
+    });
     
-    console.log(`❌ No encontrada: "${query}"`);
-    return [];
+    console.log(`✅ ${this.name}: ${movies.length} resultados`);
+    return movies;
   }
 
   async getInfo(url) {
@@ -99,30 +111,6 @@ class SeriesKaoProvider extends BaseProvider {
       poster: poster,
       downloadLinks: downloadLinks
     };
-  }
-
-  generateSlug(text) {
-    if (!text) return '';
-    
-    // Casos especiales conocidos
-    const specials = {
-      'protector': 'protector-vwSojy',
-      'instinto implacable': 'protector-vwSojy',
-      'batman': 'batman-el-caballero-de-la-noche',  // ejemplo
-      'spiderman': 'spiderman-no-way-home',
-      'thor': 'thor-amor-y-trueno'
-    };
-    
-    const lowerText = text.toLowerCase().trim();
-    if (specials[lowerText]) return specials[lowerText];
-    
-    // Generar slug automático
-    return lowerText
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
   }
 }
 
