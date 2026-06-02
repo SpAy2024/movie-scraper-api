@@ -4,13 +4,15 @@ class SeriesKaoProvider extends BaseProvider {
   constructor() {
     super('serieskao', 'https://serieskao.top', '/');
     
-    // Mapeo de títulos a URLs directas (slug real)
+    // Mapeo EXACTO - AÑADIR MÁS TÍTULOS
     this.directUrls = {
       'protector': 'protector-vwSojy',
       'instinto implacable': 'protector-vwSojy',
+      'instinto implacable 2026': 'protector-vwSojy',
       'brasil 70': 'brasil-70-la-saga-del-tricampe-F5YTVU',
       'obsolete': 'obsolete-QhGzwp',
-      'canción del samurái': 'la-cancion-del-samurai-VHYQJi'
+      'la canción del samurái': 'la-cancion-del-samurai-VHYQJi',
+      'cancion del samurai': 'la-cancion-del-samurai-VHYQJi'
     };
   }
 
@@ -20,71 +22,78 @@ class SeriesKaoProvider extends BaseProvider {
     const queryLower = query.toLowerCase().trim();
     const movies = [];
     
-    // 1. Buscar en el mapeo de URLs directas
+    // Mostrar todos los mapeos disponibles para debug
+    console.log(`   📋 Mapeos disponibles: ${Object.keys(this.directUrls).join(', ')}`);
+    
+    // Buscar slug en el mapeo (coincidencia exacta o parcial)
     let slug = null;
-    for (const [key, value] of Object.entries(this.directUrls)) {
-      if (queryLower === key || queryLower.includes(key)) {
-        slug = value;
-        console.log(`   🎯 Mapeo encontrado: "${key}" -> ${slug}`);
-        break;
+    
+    // Primero coincidencia exacta
+    if (this.directUrls[queryLower]) {
+      slug = this.directUrls[queryLower];
+      console.log(`   🎯 Coincidencia exacta: "${queryLower}" -> ${slug}`);
+    } else {
+      // Coincidencia parcial
+      for (const [key, value] of Object.entries(this.directUrls)) {
+        if (queryLower.includes(key) || key.includes(queryLower)) {
+          slug = value;
+          console.log(`   🎯 Coincidencia parcial: "${key}" -> ${slug}`);
+          break;
+        }
       }
     }
     
-    // 2. Si no hay mapeo, generar slug automático
     if (!slug) {
-      slug = this.generateSlug(queryLower);
+      console.log(`❌ No hay mapeo para: "${queryLower}"`);
+      console.log(`   💡 Sugerencia: Agrega "${queryLower}" al mapeo directUrls`);
+      return [];
     }
     
-    // 3. Probar URL directa
     const directUrl = `${this.baseURL}/pelicula/${slug}`;
     console.log(`🌐 Probando URL directa: ${directUrl}`);
     
-    const $ = await this.fetchHTML(directUrl);
-    
-    if ($) {
-      const title = $('.detail-hero__title, h1').first().text().trim();
-      const has404 = $('body').text().includes('404') || $('body').text().includes('No encontrado');
+    try {
+      const $ = await this.fetchHTML(directUrl);
       
-      if (title && !has404 && title.length > 2) {
-        console.log(`✅ Encontrado: ${title}`);
+      if ($) {
+        const title = $('.detail-hero__title, h1').first().text().trim();
+        console.log(`   📌 Título encontrado en página: "${title}"`);
         
-        let itemYear = null;
-        $('.detail-hero__meta span').each((i, el) => {
-          const text = $(el).text().trim();
-          if (/^\d{4}$/.test(text)) itemYear = text;
-        });
-        
-        const thumbnail = $('.detail-hero__poster img').first().attr('src');
-        
-        movies.push({
-          id: null,
-          title: title,
-          year: itemYear,
-          url: directUrl,
-          thumbnail: thumbnail,
-          provider: this.name,
-          type: 'movie',
-          relevance: 100
-        });
-        
-        return movies;
+        if (title && title.length > 2) {
+          console.log(`✅ Encontrado: ${title}`);
+          
+          let itemYear = null;
+          $('.detail-hero__meta span').each((i, el) => {
+            const text = $(el).text().trim();
+            if (/^\d{4}$/.test(text)) itemYear = text;
+          });
+          
+          const thumbnail = $('.detail-hero__poster img').first().attr('src');
+          
+          movies.push({
+            id: null,
+            title: title,
+            year: itemYear || year,
+            url: directUrl,
+            thumbnail: thumbnail,
+            provider: this.name,
+            type: 'movie'
+          });
+          
+          console.log(`   ✅ Película agregada: ${title}`);
+          return movies;
+        } else {
+          console.log(`   ❌ Título vacío o página no válida`);
+        }
+      } else {
+        console.log(`   ❌ fetchHTML devolvió null`);
       }
+    } catch (error) {
+      console.log(`   ❌ Error: ${error.message}`);
     }
     
-    console.log(`⚠️ No se encontró "${query}" en SeriesKao`);
+    console.log(`❌ No se pudo encontrar "${query}" en SeriesKao`);
     return [];
-  }
-  
-  generateSlug(text) {
-    if (!text) return '';
-    
-    return text
-      .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
   }
 
   async getInfo(url) {
