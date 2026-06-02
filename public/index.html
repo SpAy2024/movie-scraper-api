@@ -19,7 +19,6 @@
             overflow-x: hidden;
         }
 
-        /* Netflix-style scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -35,7 +34,6 @@
             background: #ff0a1a;
         }
 
-        /* Header Netflix style */
         .navbar {
             position: fixed;
             top: 0;
@@ -85,7 +83,6 @@
             color: #fff;
         }
 
-        /* Hero Section */
         .hero {
             position: relative;
             height: 80vh;
@@ -165,7 +162,6 @@
             background: rgba(109,109,110,0.9);
         }
 
-        /* Search Section */
         .search-section {
             padding: 30px 60px;
             background: #1a1a1a;
@@ -262,7 +258,6 @@
             transform: translateY(-2px);
         }
 
-        /* Results Grid - Netflix style */
         .results-section {
             padding: 30px 60px;
         }
@@ -372,7 +367,6 @@
             color: #ffc107;
         }
 
-        /* Modal Netflix Style */
         .modal {
             display: none;
             position: fixed;
@@ -504,7 +498,6 @@
             border-color: #fff;
         }
 
-        /* Loading */
         .loading-spinner {
             text-align: center;
             padding: 60px;
@@ -532,7 +525,6 @@
             font-size: 1.2rem;
         }
 
-        /* Genres Grid */
         .genres-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -556,7 +548,6 @@
             transform: translateY(-2px);
         }
 
-        /* Stats */
         .stats {
             display: flex;
             gap: 20px;
@@ -577,7 +568,6 @@
             font-size: 1.2rem;
         }
 
-        /* Provider Section */
         .provider-section {
             margin-bottom: 40px;
         }
@@ -589,7 +579,6 @@
             display: inline-block;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .navbar {
                 padding: 0 20px;
@@ -638,7 +627,6 @@
 </head>
 <body>
 
-<!-- Netflix-style Navbar -->
 <nav class="navbar" id="navbar">
     <a href="#" class="logo">MOVIESCRAPER</a>
     <div class="nav-links">
@@ -648,7 +636,6 @@
     </div>
 </nav>
 
-<!-- Hero Section -->
 <div class="hero" id="heroSection">
     <div class="hero-content">
         <h1>Películas y Series Ilimitadas</h1>
@@ -660,9 +647,7 @@
     </div>
 </div>
 
-<!-- Main Content -->
 <main>
-    <!-- Search Section -->
     <div class="search-section" id="searchSection">
         <div class="search-tabs">
             <button class="tab-btn active" data-tab="title">🔍 Por Título</button>
@@ -671,7 +656,6 @@
             <button class="tab-btn" data-tab="providers">📡 Proveedores</button>
         </div>
 
-        <!-- Tab: Título -->
         <div id="tab-title" class="tab-pane active">
             <div class="search-box">
                 <input type="text" class="search-input" id="titleInput" placeholder="Título de la película o serie...">
@@ -685,7 +669,6 @@
             <div id="titleResults" class="movie-grid" style="margin-top: 20px;"></div>
         </div>
 
-        <!-- Tab: Actor -->
         <div id="tab-person" class="tab-pane">
             <div class="search-box">
                 <input type="text" class="search-input" id="personInput" placeholder="Nombre del actor/actriz...">
@@ -694,7 +677,6 @@
             <div id="personResults" class="movie-grid" style="margin-top: 20px;"></div>
         </div>
 
-        <!-- Tab: Género -->
         <div id="tab-genre" class="tab-pane">
             <div class="genres-grid" id="genresGrid">
                 <div class="loading-spinner"></div>
@@ -702,36 +684,26 @@
             <div id="genreResults" class="movie-grid" style="margin-top: 20px;"></div>
         </div>
 
-        <!-- Tab: Proveedores -->
         <div id="tab-providers" class="tab-pane">
             <div class="search-box">
                 <input type="text" class="search-input" id="directSearchInput" placeholder="Buscar directamente...">
                 <select class="search-select" id="providerSelect">
-    <option value="">Todos los proveedores</option>
-    <option value="estrenoscinesaa">EstrenosCinesaa</option>
-    <option value="cinecalidad">CineCalidad</option>
-    <!-- Los siguientes están comentados porque no funcionan actualmente -->
-    <!-- <option value="verpelistv">VerPelisTV</option> -->
-    <!-- <option value="pelisplushd">PelisPlusHD</option> -->
-    <!-- <option value="sololatino">SoloLatino</option> -->
-    <!-- <option value="detodopeliculas">DeTodoPeliculas</option> -->
-    <!-- <option value="lamovie">LaMovie</option> -->
-    <!-- <option value="serieskao">SeriesKao</option> -->
-</select>
+                    <option value="">Todos los proveedores</option>
+                    <option value="estrenoscinesaa">EstrenosCinesaa</option>
+                    <option value="cinecalidad">CineCalidad</option>
+                </select>
                 <button class="search-btn" onclick="searchDirect()">🔍 Buscar</button>
             </div>
             <div id="directResults"></div>
         </div>
     </div>
 
-    <!-- Results Container -->
     <div class="results-section" id="resultsSection">
         <div id="stats" class="stats"></div>
         <div id="results"></div>
     </div>
 </main>
 
-<!-- Modal -->
 <div id="modal" class="modal">
     <div class="modal-content">
         <span class="modal-close" onclick="closeModal()">&times;</span>
@@ -742,390 +714,428 @@
 </div>
 
 <script>
-   // Cambiar esta línea en index.html
+// ============================================================
+// CONFIGURACIÓN
+// ============================================================
 const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3001/api/v1/movies'
-    : '/api/v1/movies';  // ✅ Usa rutas relativas
+    : '/api/v1/movies';
 
-    // Navbar scroll effect
-    window.addEventListener('scroll', () => {
-        const navbar = document.getElementById('navbar');
-        if (window.scrollY > 50) {
-            navbar.classList.add('navbar-scrolled');
+const API_KEY = 'a7f3k9m2x8q4w1e6r5t0y9u4i7o2p1l3';
+
+async function fetchWithAuth(url, options = {}) {
+    const headers = {
+        'x-api-key': API_KEY,
+        'Content-Type': 'application/json',
+        ...options.headers
+    };
+    const response = await fetch(url, { ...options, headers });
+    return response;
+}
+
+// ============================================================
+// NAVBAR
+// ============================================================
+window.addEventListener('scroll', () => {
+    const navbar = document.getElementById('navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('navbar-scrolled');
+    } else {
+        navbar.classList.remove('navbar-scrolled');
+    }
+});
+
+function showHero() {
+    document.getElementById('heroSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function scrollToSearch() {
+    document.getElementById('searchSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ============================================================
+// TABS
+// ============================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+    });
+});
+
+// ============================================================
+// BÚSQUEDA POR TÍTULO
+// ============================================================
+async function searchByTitle(preset = null) {
+    let title = document.getElementById('titleInput')?.value.trim();
+    if (preset === 'popular') title = 'popular';
+    if (!title && preset !== 'popular') {
+        alert('Ingresa un título');
+        return;
+    }
+
+    const year = document.getElementById('yearInput')?.value.trim();
+    const language = document.getElementById('languageSelect')?.value || 'es';
+
+    const resultsDiv = document.getElementById('titleResults');
+    resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
+
+    try {
+        let url;
+        if (preset === 'popular') {
+            url = `${API_URL}/tmdb/search-by-genre?genreId=28&page=1&language=${language}`;
         } else {
-            navbar.classList.remove('navbar-scrolled');
-        }
-    });
-
-    function showHero() {
-        document.getElementById('heroSection').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function scrollToSearch() {
-        document.getElementById('searchSection').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // Tabs
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const tab = btn.dataset.tab;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-            document.getElementById(`tab-${tab}`).classList.add('active');
-        });
-    });
-
-    // Búsqueda por Título (con TMDB)
-    async function searchByTitle(preset = null) {
-        let title = document.getElementById('titleInput')?.value.trim();
-        if (preset === 'popular') title = 'popular';
-        if (!title && preset !== 'popular') {
-            alert('Ingresa un título');
-            return;
+            url = `${API_URL}/tmdb/search?title=${encodeURIComponent(title)}&language=${language}`;
+            if (year) url += `&year=${year}`;
         }
 
-        const year = document.getElementById('yearInput')?.value.trim();
-        const language = document.getElementById('languageSelect')?.value || 'es';
+        const response = await fetchWithAuth(url);
+        const data = await response.json();
 
-        const resultsDiv = document.getElementById('titleResults');
-        resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
-
-        try {
-            let url;
-            if (preset === 'popular') {
-                url = `${API_URL}/tmdb/search-by-genre?genreId=28&page=1&language=${language}`;
-            } else {
-                url = `${API_URL}/tmdb/search?title=${encodeURIComponent(title)}&language=${language}`;
-                if (year) url += `&year=${year}`;
-            }
-
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (preset === 'popular') {
-                if (data.success && data.movies) {
-                    displayMovieGrid(data.movies, resultsDiv);
-                } else {
-                    resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron películas populares</div>';
-                }
-            } else if (data.success && data.movie) {
-                resultsDiv.innerHTML = '';
-                const card = createMovieCard(data.movie);
-                resultsDiv.appendChild(card);
-                // Buscar servidores automáticamente
-                findServersForMovie(data.movie.title, data.movie.year);
-            } else if (data.results && data.results.length > 0) {
-                displayMovieGrid(data.results, resultsDiv);
-            } else {
-                resultsDiv.innerHTML = '<div class="no-results">😞 No se encontró la película</div>';
-            }
-        } catch (error) {
-            resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
-        }
-    }
-
-    // Búsqueda por Actor
-    async function searchByPerson() {
-        const personName = document.getElementById('personInput').value.trim();
-        if (!personName) {
-            alert('Ingresa un nombre');
-            return;
-        }
-
-        const resultsDiv = document.getElementById('personResults');
-        resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
-
-        try {
-            const response = await fetch(`${API_URL}/tmdb/search-by-person?name=${encodeURIComponent(personName)}`);
-            const data = await response.json();
-
-            if (data.success && data.movies && data.movies.length > 0) {
+        if (preset === 'popular') {
+            if (data.success && data.movies) {
                 displayMovieGrid(data.movies, resultsDiv);
             } else {
-                resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron películas para este actor</div>';
+                resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron películas populares</div>';
             }
-        } catch (error) {
-            resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
+        } else if (data.success && data.movie) {
+            resultsDiv.innerHTML = '';
+            const card = createMovieCard(data.movie);
+            resultsDiv.appendChild(card);
+            findServersForMovie(data.movie.title, data.movie.year);
+        } else if (data.results && data.results.length > 0) {
+            displayMovieGrid(data.results, resultsDiv);
+        } else {
+            resultsDiv.innerHTML = '<div class="no-results">😞 No se encontró la película</div>';
         }
+    } catch (error) {
+        console.error('Error:', error);
+        resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
+    }
+}
+
+// ============================================================
+// BÚSQUEDA POR ACTOR
+// ============================================================
+async function searchByPerson() {
+    const personName = document.getElementById('personInput').value.trim();
+    if (!personName) {
+        alert('Ingresa un nombre');
+        return;
     }
 
-    // Cargar géneros
-    async function loadGenres() {
-        const genresGrid = document.getElementById('genresGrid');
-        try {
-            const response = await fetch(`${API_URL}/tmdb/genres`);
-            const data = await response.json();
+    const resultsDiv = document.getElementById('personResults');
+    resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
 
-            if (data.success && data.genres) {
-                genresGrid.innerHTML = '';
-                data.genres.forEach(genre => {
-                    const btn = document.createElement('button');
-                    btn.className = 'genre-btn';
-                    btn.textContent = genre.name;
-                    btn.onclick = () => searchByGenre(genre.id);
-                    genresGrid.appendChild(btn);
-                });
-            } else {
-                genresGrid.innerHTML = '<div class="no-results">❌ Error cargando géneros</div>';
-            }
-        } catch (error) {
+    try {
+        const response = await fetchWithAuth(`${API_URL}/tmdb/search-by-person?name=${encodeURIComponent(personName)}`);
+        const data = await response.json();
+
+        if (data.success && data.movies && data.movies.length > 0) {
+            displayMovieGrid(data.movies, resultsDiv);
+        } else {
+            resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron películas para este actor</div>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
+    }
+}
+
+// ============================================================
+// GÉNEROS
+// ============================================================
+async function loadGenres() {
+    const genresGrid = document.getElementById('genresGrid');
+    try {
+        const response = await fetchWithAuth(`${API_URL}/tmdb/genres`);
+        const data = await response.json();
+
+        if (data.success && data.genres) {
+            genresGrid.innerHTML = '';
+            data.genres.forEach(genre => {
+                const btn = document.createElement('button');
+                btn.className = 'genre-btn';
+                btn.textContent = genre.name;
+                btn.onclick = () => searchByGenre(genre.id);
+                genresGrid.appendChild(btn);
+            });
+        } else {
             genresGrid.innerHTML = '<div class="no-results">❌ Error cargando géneros</div>';
         }
+    } catch (error) {
+        console.error('Error:', error);
+        genresGrid.innerHTML = '<div class="no-results">❌ Error cargando géneros</div>';
+    }
+}
+
+async function searchByGenre(genreId) {
+    const resultsDiv = document.getElementById('genreResults');
+    resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
+
+    try {
+        const response = await fetchWithAuth(`${API_URL}/tmdb/search-by-genre?genreId=${genreId}&page=1`);
+        const data = await response.json();
+
+        if (data.success && data.movies && data.movies.length > 0) {
+            displayMovieGrid(data.movies, resultsDiv);
+        } else {
+            resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron películas en este género</div>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
+    }
+}
+
+// ============================================================
+// BÚSQUEDA DIRECTA EN PROVEEDORES
+// ============================================================
+async function searchDirect() {
+    const query = document.getElementById('directSearchInput').value.trim();
+    const provider = document.getElementById('providerSelect').value;
+
+    if (!query) {
+        alert('Ingresa un término de búsqueda');
+        return;
     }
 
-    // Búsqueda por Género
-    async function searchByGenre(genreId) {
-        const resultsDiv = document.getElementById('genreResults');
-        resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
+    const resultsDiv = document.getElementById('directResults');
+    resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
 
-        try {
-            const response = await fetch(`${API_URL}/tmdb/search-by-genre?genreId=${genreId}&page=1`);
-            const data = await response.json();
+    try {
+        let url = `${API_URL}/search?q=${encodeURIComponent(query)}`;
+        if (provider) url += `&provider=${provider}`;
 
-            if (data.success && data.movies && data.movies.length > 0) {
-                displayMovieGrid(data.movies, resultsDiv);
-            } else {
-                resultsDiv.innerHTML = '<div class="no-results">😞 No se encontraron películas en este género</div>';
-            }
-        } catch (error) {
-            resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
-        }
+        const response = await fetchWithAuth(url);
+        const data = await response.json();
+
+        displayProviderResults(data.results, resultsDiv);
+    } catch (error) {
+        console.error('Error:', error);
+        resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
     }
+}
 
-    // Búsqueda directa en proveedores
-    async function searchDirect() {
-        const query = document.getElementById('directSearchInput').value.trim();
-        const provider = document.getElementById('providerSelect').value;
+// ============================================================
+// BUSCAR SERVIDORES
+// ============================================================
+async function findServersForMovie(title, year) {
+    const serversDiv = document.getElementById('movieServers');
+    if (!serversDiv) return;
 
-        if (!query) {
-            alert('Ingresa un término de búsqueda');
-            return;
-        }
+    serversDiv.innerHTML = '<div class="loading-spinner"></div>';
 
-        const resultsDiv = document.getElementById('directResults');
-        resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
+    try {
+        const response = await fetchWithAuth(`${API_URL}/search-with-tmdb?title=${encodeURIComponent(title)}&year=${year || ''}`);
+        const data = await response.json();
 
-        try {
-            let url = `${API_URL}/search?q=${encodeURIComponent(query)}`;
-            if (provider) url += `&provider=${provider}`;
-
-            const response = await fetch(url);
-            const data = await response.json();
-
-            displayProviderResults(data.results, resultsDiv);
-        } catch (error) {
-            resultsDiv.innerHTML = '<div class="no-results">❌ Error en la búsqueda</div>';
-        }
-    }
-
-    async function findServersForMovie(title, year) {
-        const serversDiv = document.getElementById('movieServers');
-        if (!serversDiv) return;
-
-        serversDiv.innerHTML = '<div class="loading-spinner"></div>';
-
-        try {
-            const response = await fetch(`${API_URL}/search-with-tmdb?title=${encodeURIComponent(title)}&year=${year || ''}`);
-            const data = await response.json();
-
-            if (data.servers && data.servers.length > 0) {
-                serversDiv.innerHTML = `
-                    <div class="servers-section">
-                        <div class="servers-title">🎬 SERVIDORES DISPONIBLES (${data.totalServers})</div>
-                        <div class="servers-grid" id="serversGrid"></div>
-                    </div>
-                `;
-                const serversGrid = document.getElementById('serversGrid');
-                data.servers.forEach(provider => {
-                    provider.servers.forEach(server => {
-                        if (server.url && server.url !== '#') {
-                            const btn = document.createElement('button');
-                            btn.className = 'server-btn';
-                            btn.textContent = `${provider.provider.toUpperCase()} - ${server.server || 'Servidor'}`;
-                            btn.onclick = () => openPlayer(server.url);
-                            serversGrid.appendChild(btn);
-                        }
-                    });
+        if (data.servers && data.servers.length > 0) {
+            serversDiv.innerHTML = `
+                <div class="servers-section">
+                    <div class="servers-title">🎬 SERVIDORES DISPONIBLES (${data.totalServers})</div>
+                    <div class="servers-grid" id="serversGrid"></div>
+                </div>
+            `;
+            const serversGrid = document.getElementById('serversGrid');
+            data.servers.forEach(provider => {
+                provider.servers.forEach(server => {
+                    if (server.url && server.url !== '#') {
+                        const btn = document.createElement('button');
+                        btn.className = 'server-btn';
+                        btn.textContent = `${provider.provider.toUpperCase()} - ${server.server || 'Servidor'}`;
+                        btn.onclick = () => openPlayer(server.url);
+                        serversGrid.appendChild(btn);
+                    }
                 });
-            } else {
-                serversDiv.innerHTML = '<div class="no-results">⚠️ No se encontraron servidores</div>';
-            }
-        } catch (error) {
-            serversDiv.innerHTML = '<div class="no-results">❌ Error buscando servidores</div>';
-        }
-    }
-
-    function displayMovieGrid(movies, container) {
-        container.innerHTML = '';
-        if (!movies || movies.length === 0) {
-            container.innerHTML = '<div class="no-results">😞 No se encontraron resultados</div>';
-            return;
-        }
-        movies.forEach(movie => {
-            const card = createMovieCard(movie);
-            container.appendChild(card);
-        });
-    }
-
-    function createMovieCard(movie) {
-        const card = document.createElement('div');
-        card.className = 'movie-card';
-        
-        const posterUrl = movie.posterPath || movie.poster_path || movie.thumbnail;
-        const poster = posterUrl && posterUrl.startsWith('http') ? posterUrl : (posterUrl ? `https://image.tmdb.org/t/p/w500${posterUrl}` : null);
-        const title = movie.title || movie.name || 'Sin título';
-        const year = movie.year || (movie.release_date ? movie.release_date.split('-')[0] : '');
-        const rating = movie.voteAverage || movie.vote_average;
-        
-        card.innerHTML = `
-            ${poster ? 
-                `<img src="${poster}" alt="${title}" onerror="this.src='https://placehold.co/200x280?text=No+Image'">` : 
-                '<div class="no-image">🎬</div>'
-            }
-            ${year ? `<span class="badge-year">${year}</span>` : ''}
-            ${rating ? `<span class="badge-rating">⭐ ${rating.toFixed(1)}</span>` : ''}
-            <div class="movie-info-overlay">
-                <h3>${title.substring(0, 40)}${title.length > 40 ? '...' : ''}</h3>
-                <div class="movie-meta">
-                    ${year ? `<span class="movie-year">📅 ${year}</span>` : ''}
-                    ${rating ? `<span class="movie-rating">⭐ ${rating.toFixed(1)}</span>` : ''}
-                </div>
-            </div>
-        `;
-        
-        card.onclick = () => {
-            if (movie.id) {
-                getMovieAndServers(movie.id);
-            } else if (movie.url) {
-                playMovie(movie.url, title, movie.provider);
-            }
-        };
-        
-        return card;
-    }
-
-    function displayProviderResults(results, container) {
-        container.innerHTML = '';
-        let hasResults = false;
-
-        for (const [provider, movies] of Object.entries(results)) {
-            if (!movies || movies.length === 0) continue;
-            hasResults = true;
-
-            const section = document.createElement('div');
-            section.className = 'provider-section';
-            section.innerHTML = `<h3 class="provider-title">📺 ${provider.toUpperCase()}</h3>`;
-            const grid = document.createElement('div');
-            grid.className = 'movie-grid';
-            
-            movies.slice(0, 12).forEach(movie => {
-                const card = createMovieCard({ ...movie, provider: provider, url: movie.url });
-                grid.appendChild(card);
             });
-            
-            section.appendChild(grid);
-            container.appendChild(section);
+        } else {
+            serversDiv.innerHTML = '<div class="no-results">⚠️ No se encontraron servidores</div>';
         }
-
-        if (!hasResults) {
-            container.innerHTML = '<div class="no-results">😞 No se encontraron resultados</div>';
-        }
+    } catch (error) {
+        console.error('Error:', error);
+        serversDiv.innerHTML = '<div class="no-results">❌ Error buscando servidores</div>';
     }
+}
 
-    async function getMovieAndServers(tmdbId) {
-        const modal = document.getElementById('modal');
-        const modalBody = document.getElementById('modalBody');
-        
-        modalBody.innerHTML = '<div class="loading-spinner"></div>';
-        modal.style.display = 'block';
-
-        try {
-            const response = await fetch(`${API_URL}/tmdb/movie/${tmdbId}`);
-            const data = await response.json();
-            
-            if (data.success && data.movie) {
-                renderMovieModal(data.movie);
-                // Buscar servidores
-                const serversResponse = await fetch(`${API_URL}/search-with-tmdb?title=${encodeURIComponent(data.title)}&year=${data.year || ''}`);
-                const serversData = await serversResponse.json();
-                if (serversData.servers && serversData.servers.length > 0) {
-                    addServersToModal(serversData.servers);
-                }
-            } else {
-                modalBody.innerHTML = '<div class="no-results">❌ No se pudo cargar la información</div>';
-            }
-        } catch (error) {
-            modalBody.innerHTML = '<div class="no-results">❌ Error al cargar</div>';
-        }
+// ============================================================
+// MOSTRAR RESULTADOS
+// ============================================================
+function displayMovieGrid(movies, container) {
+    container.innerHTML = '';
+    if (!movies || movies.length === 0) {
+        container.innerHTML = '<div class="no-results">😞 No se encontraron resultados</div>';
+        return;
     }
+    movies.forEach(movie => {
+        const card = createMovieCard(movie);
+        container.appendChild(card);
+    });
+}
 
-    async function playMovie(url, title, provider) {
-        const modal = document.getElementById('modal');
-        const modalBody = document.getElementById('modalBody');
-        
-        modalBody.innerHTML = '<div class="loading-spinner"></div>';
-        modal.style.display = 'block';
-
-        try {
-            const infoResponse = await fetch(`${API_URL}/info?url=${encodeURIComponent(url)}`);
-            const infoData = await infoResponse.json();
-            const movie = infoData.data;
-            
-            let servers = [];
-            if (provider) {
-                const serversResponse = await fetch(`${API_URL}/servers?url=${encodeURIComponent(url)}&provider=${provider}`);
-                const serversData = await serversResponse.json();
-                if (serversData.servidores && serversData.servidores.iframes) {
-                    servers = serversData.servidores.iframes;
-                }
-            }
-            
-            if (servers.length === 0 && movie.downloadLinks) {
-                servers = movie.downloadLinks.map(link => ({
-                    server: link.server || 'Servidor',
-                    url: link.url
-                }));
-            }
-            
-            currentServers = servers;
-            renderMovieModal(movie);
-            if (servers.length > 0) {
-                addServersToModal([{ provider: provider, servers: servers }]);
-            }
-            
-        } catch (error) {
-            modalBody.innerHTML = '<div class="no-results">❌ Error al cargar</div>';
+function createMovieCard(movie) {
+    const card = document.createElement('div');
+    card.className = 'movie-card';
+    
+    const posterUrl = movie.posterPath || movie.poster_path || movie.thumbnail;
+    const poster = posterUrl && posterUrl.startsWith('http') ? posterUrl : (posterUrl ? `https://image.tmdb.org/t/p/w500${posterUrl}` : null);
+    const title = movie.title || movie.name || 'Sin título';
+    const year = movie.year || (movie.release_date ? movie.release_date.split('-')[0] : '');
+    const rating = movie.voteAverage || movie.vote_average;
+    
+    card.innerHTML = `
+        ${poster ? 
+            `<img src="${poster}" alt="${title}" onerror="this.src='https://placehold.co/200x280?text=No+Image'">` : 
+            '<div class="no-image">🎬</div>'
         }
-    }
-
-    function renderMovieModal(movie) {
-        const modalBody = document.getElementById('modalBody');
-        const posterUrl = movie.posterPath || movie.poster_path;
-        const poster = posterUrl ? (posterUrl.startsWith('http') ? posterUrl : `https://image.tmdb.org/t/p/w500${posterUrl}`) : null;
-        
-        modalBody.innerHTML = `
-            <div class="video-container" id="videoContainer">
-                <div id="playerFrame" style="display: flex; align-items: center; justify-content: center; height: 56vh; background: #000; color: #888;">
-                    Selecciona un servidor para reproducir
-                </div>
+        ${year ? `<span class="badge-year">${year}</span>` : ''}
+        ${rating ? `<span class="badge-rating">⭐ ${rating.toFixed(1)}</span>` : ''}
+        <div class="movie-info-overlay">
+            <h3>${title.substring(0, 40)}${title.length > 40 ? '...' : ''}</h3>
+            <div class="movie-meta">
+                ${year ? `<span class="movie-year">📅 ${year}</span>` : ''}
+                ${rating ? `<span class="movie-rating">⭐ ${rating.toFixed(1)}</span>` : ''}
             </div>
-            <div class="modal-info">
-                <h2>${movie.title || movie.name || 'Sin título'}</h2>
-                <div class="modal-meta">
-                    ${movie.year || (movie.release_date ? movie.release_date.split('-')[0] : '') ? `<span>📅 ${movie.year || movie.release_date.split('-')[0]}</span>` : ''}
-                    ${movie.vote_average ? `<span>⭐ ${movie.vote_average}/10</span>` : ''}
-                    ${movie.runtime ? `<span>⏱️ ${movie.runtime} min</span>` : ''}
-                </div>
-                <div class="modal-synopsis">${movie.overview || 'Sinopsis no disponible.'}</div>
-                <div class="servers-section" id="serversSection">
-                    <div class="servers-title">🎬 BUSCANDO SERVIDORES...</div>
-                </div>
-            </div>
-        `;
+        </div>
+    `;
+    
+    card.onclick = () => {
+        if (movie.id) {
+            getMovieAndServers(movie.id);
+        } else if (movie.url) {
+            playMovie(movie.url, title, movie.provider);
+        }
+    };
+    
+    return card;
+}
+
+function displayProviderResults(results, container) {
+    container.innerHTML = '';
+    let hasResults = false;
+
+    for (const [provider, movies] of Object.entries(results)) {
+        if (!movies || movies.length === 0) continue;
+        hasResults = true;
+
+        const section = document.createElement('div');
+        section.className = 'provider-section';
+        section.innerHTML = `<h3 class="provider-title">📺 ${provider.toUpperCase()}</h3>`;
+        const grid = document.createElement('div');
+        grid.className = 'movie-grid';
+        
+        movies.slice(0, 12).forEach(movie => {
+            const card = createMovieCard({ ...movie, provider: provider, url: movie.url });
+            grid.appendChild(card);
+        });
+        
+        section.appendChild(grid);
+        container.appendChild(section);
     }
 
-   // Reemplaza la función addServersToModal
+    if (!hasResults) {
+        container.innerHTML = '<div class="no-results">😞 No se encontraron resultados</div>';
+    }
+}
+
+// ============================================================
+// MODAL Y REPRODUCTOR
+// ============================================================
+async function getMovieAndServers(tmdbId) {
+    const modal = document.getElementById('modal');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalBody.innerHTML = '<div class="loading-spinner"></div>';
+    modal.style.display = 'block';
+
+    try {
+        const response = await fetchWithAuth(`${API_URL}/tmdb/movie/${tmdbId}`);
+        const data = await response.json();
+        
+        if (data.success && data.movie) {
+            renderMovieModal(data.movie);
+            const serversResponse = await fetchWithAuth(`${API_URL}/search-with-tmdb?title=${encodeURIComponent(data.movie.title)}&year=${data.movie.year || ''}`);
+            const serversData = await serversResponse.json();
+            if (serversData.servers && serversData.servers.length > 0) {
+                addServersToModal(serversData.servers);
+            }
+        } else {
+            modalBody.innerHTML = '<div class="no-results">❌ No se pudo cargar la información</div>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        modalBody.innerHTML = '<div class="no-results">❌ Error al cargar</div>';
+    }
+}
+
+async function playMovie(url, title, provider) {
+    const modal = document.getElementById('modal');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalBody.innerHTML = '<div class="loading-spinner"></div>';
+    modal.style.display = 'block';
+
+    try {
+        const infoResponse = await fetchWithAuth(`${API_URL}/info?url=${encodeURIComponent(url)}`);
+        const infoData = await infoResponse.json();
+        const movie = infoData.data;
+        
+        let servers = [];
+        if (provider) {
+            const serversResponse = await fetchWithAuth(`${API_URL}/servers?url=${encodeURIComponent(url)}&provider=${provider}`);
+            const serversData = await serversResponse.json();
+            if (serversData.servidores && serversData.servidores.iframes) {
+                servers = serversData.servidores.iframes;
+            }
+        }
+        
+        if (servers.length === 0 && movie.downloadLinks) {
+            servers = movie.downloadLinks.map(link => ({
+                server: link.server || 'Servidor',
+                url: link.url
+            }));
+        }
+        
+        renderMovieModal(movie);
+        if (servers.length > 0) {
+            addServersToModal([{ provider: provider, servers: servers }]);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        modalBody.innerHTML = '<div class="no-results">❌ Error al cargar</div>';
+    }
+}
+
+function renderMovieModal(movie) {
+    const modalBody = document.getElementById('modalBody');
+    const posterUrl = movie.posterPath || movie.poster_path;
+    const poster = posterUrl ? (posterUrl.startsWith('http') ? posterUrl : `https://image.tmdb.org/t/p/w500${posterUrl}`) : null;
+    
+    modalBody.innerHTML = `
+        <div class="video-container" id="videoContainer">
+            <div id="playerFrame" style="display: flex; align-items: center; justify-content: center; height: 56vh; background: #000; color: #888;">
+                Selecciona un servidor para reproducir
+            </div>
+        </div>
+        <div class="modal-info">
+            <h2>${movie.title || movie.name || 'Sin título'}</h2>
+            <div class="modal-meta">
+                ${movie.year || (movie.release_date ? movie.release_date.split('-')[0] : '') ? `<span>📅 ${movie.year || movie.release_date.split('-')[0]}</span>` : ''}
+                ${movie.vote_average ? `<span>⭐ ${movie.vote_average}/10</span>` : ''}
+                ${movie.runtime ? `<span>⏱️ ${movie.runtime} min</span>` : ''}
+            </div>
+            <div class="modal-synopsis">${movie.overview || 'Sinopsis no disponible.'}</div>
+            <div class="servers-section" id="serversSection">
+                <div class="servers-title">🎬 BUSCANDO SERVIDORES...</div>
+            </div>
+        </div>
+    `;
+}
+
 function addServersToModal(serversList) {
     const serversSection = document.getElementById('serversSection');
     if (!serversSection) return;
@@ -1153,14 +1163,11 @@ function addServersToModal(serversList) {
             btn.className = 'server-btn';
             btn.textContent = server.server || `Servidor ${idx + 1}`;
             btn.setAttribute('data-url', server.url || '');
-            btn.setAttribute('data-idx', idx);
             
-            // Evento click con depuración
             btn.onclick = function(e) {
                 e.preventDefault();
-                e.stopPropagation();
                 const url = this.getAttribute('data-url');
-                console.log(`🎬 Click en servidor ${idx + 1}: ${server.server || 'Servidor'} - URL: ${url}`);
+                console.log(`🎬 Click en servidor: ${server.server || 'Servidor'} - URL: ${url}`);
                 
                 if (!url) {
                     alert('No hay URL disponible para este servidor');
@@ -1168,8 +1175,6 @@ function addServersToModal(serversList) {
                 }
                 
                 openPlayer(url);
-                
-                // Marcar como activo
                 document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
             };
@@ -1181,7 +1186,6 @@ function addServersToModal(serversList) {
     }
 }
 
-// Reemplaza la función openPlayer
 async function openPlayer(url) {
     console.log(`🎬 Abriendo reproductor con URL: ${url}`);
     
@@ -1193,23 +1197,19 @@ async function openPlayer(url) {
     
     playerFrame.style.display = 'block';
     
-    // Caso 1: Es un enlace de estrenoscinesaa.com/links/ (requiere resolución)
     if (url.includes('estrenoscinesaa.com/links/')) {
         console.log('🔄 Resolviendo enlace de estrenoscinesaa...');
         playerFrame.innerHTML = '<div class="loading-spinner"></div>';
         
         try {
-            // Llamar al backend para resolver el enlace
-            const response = await fetch('/api/v1/movies/resolve-link', {
+            const response = await fetchWithAuth('/api/v1/movies/resolve-link', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: url })
             });
             const data = await response.json();
             
             if (data.success && data.resolvedUrl) {
                 console.log('✅ Enlace resuelto:', data.resolvedUrl);
-                // Abrir el enlace resuelto en nueva pestaña
                 window.open(data.resolvedUrl, '_blank');
                 playerFrame.innerHTML = `
                     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px; text-align: center; padding: 20px;">
@@ -1217,72 +1217,57 @@ async function openPlayer(url) {
                         <button onclick="window.open('${data.resolvedUrl}', '_blank')" class="server-btn" style="padding: 12px 24px; font-size: 16px;">
                             🔗 Abrir enlace
                         </button>
-                        <p style="color: #888; font-size: 12px;">Nota: Algunos sitios requieren que veas el contenido directamente en su página</p>
                     </div>
                 `;
             } else {
                 throw new Error('No se pudo resolver el enlace');
             }
         } catch (error) {
-            console.error('❌ Error resolviendo enlace:', error);
+            console.error('❌ Error:', error);
             playerFrame.innerHTML = `
                 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px; text-align: center; padding: 20px;">
-                    <p style="color: #ff4444; font-size: 16px;">No se pudo resolver el enlace</p>
-                    <button onclick="window.open('${url}', '_blank')" class="server-btn" style="padding: 12px 24px; font-size: 16px;">
-                        🔗 Abrir enlace directamente
-                    </button>
+                    <p style="color: #ff4444;">No se pudo resolver el enlace</p>
+                    <button onclick="window.open('${url}', '_blank')" class="server-btn">🔗 Abrir directamente</button>
                 </div>
             `;
         }
-    }
-    // Caso 2: YouTube
-    else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
         let videoId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
         playerFrame.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
-    }
-    // Caso 3: Video directo
-    else if (url.includes('.mp4') || url.includes('.m3u8') || url.includes('.mkv')) {
-        playerFrame.innerHTML = `<video controls autoplay style="width: 100%; height: 100%;">
-            <source src="${url}" type="video/mp4">
-            Tu navegador no soporta reproducción de video.
-        </video>`;
-    }
-    // Caso 4: Otros iframes
-    else {
-        playerFrame.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width: 100%; height: 100%;"></iframe>`;
+    } else if (url.includes('.mp4') || url.includes('.m3u8') || url.includes('.mkv')) {
+        playerFrame.innerHTML = `<video controls autoplay style="width: 100%; height: 100%;"><source src="${url}" type="video/mp4"></video>`;
+    } else {
+        playerFrame.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
     }
 }
 
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+}
 
-// Añadir también una función para probar servidores manualmente desde consola
+// ============================================================
+// INICIALIZAR
+// ============================================================
+loadGenres();
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+});
+
+document.getElementById('titleInput')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') searchByTitle();
+});
+document.getElementById('personInput')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') searchByPerson();
+});
+document.getElementById('directSearchInput')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') searchDirect();
+});
+
 window.testServer = function(url) {
     console.log('🧪 Probando servidor:', url);
     openPlayer(url);
 };
-
-    function closeModal() {
-        document.getElementById('modal').style.display = 'none';
-        currentServers = [];
-    }
-
-    // Inicializar
-    loadGenres();
-
-    // Cerrar modal con ESC
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeModal();
-    });
-
-    // Permitir búsqueda con Enter
-    document.getElementById('titleInput')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') searchByTitle();
-    });
-    document.getElementById('personInput')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') searchByPerson();
-    });
-    document.getElementById('directSearchInput')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') searchDirect();
-    });
 </script>
 </body>
 </html>
