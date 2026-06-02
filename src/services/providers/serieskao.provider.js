@@ -1,5 +1,4 @@
 const BaseProvider = require('./BaseProvider');
-const puppeteer = require('puppeteer');
 
 class SeriesKaoProvider extends BaseProvider {
   constructor() {
@@ -9,8 +8,9 @@ class SeriesKaoProvider extends BaseProvider {
 
   async getBrowser() {
     if (!this.browser) {
+      const puppeteer = require('puppeteer');
       this.browser = await puppeteer.launch({
-        headless: true,
+        headless: 'new',
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
     }
@@ -29,16 +29,12 @@ class SeriesKaoProvider extends BaseProvider {
       
       await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 30000 });
       
-      // Esperar a que carguen los resultados
       await page.waitForSelector('.card, a[href*="/pelicula/"]', { timeout: 10000 }).catch(() => {
-        console.log('⚠️ No se encontraron resultados en la página');
+        console.log('⚠️ No se encontraron resultados');
       });
       
-      // Extraer datos
-      const movies = await page.evaluate((query) => {
+      const movies = await page.evaluate((queryLower) => {
         const results = [];
-        const queryLower = query.toLowerCase();
-        
         document.querySelectorAll('a[href*="/pelicula/"]').forEach(el => {
           let url = el.getAttribute('href');
           if (!url) return;
@@ -60,14 +56,12 @@ class SeriesKaoProvider extends BaseProvider {
               title: title,
               year: year,
               url: fullUrl,
-              thumbnail: thumbnail,
-              type: 'movie'
+              thumbnail: thumbnail
             });
           }
         });
-        
         return results;
-      }, query);
+      }, query.toLowerCase());
       
       await page.close();
       
@@ -83,7 +77,7 @@ class SeriesKaoProvider extends BaseProvider {
       }));
       
     } catch (error) {
-      console.error(`❌ Error en búsqueda: ${error.message}`);
+      console.error(`❌ Error: ${error.message}`);
       return [];
     }
   }
@@ -152,7 +146,7 @@ class SeriesKaoProvider extends BaseProvider {
       };
       
     } catch (error) {
-      console.error(`❌ Error en getInfo: ${error.message}`);
+      console.error(`❌ Error: ${error.message}`);
       return null;
     }
   }
