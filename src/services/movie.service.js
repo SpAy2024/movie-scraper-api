@@ -1,33 +1,42 @@
-const SololatinoProvider = require('../providers/sololatino.provider');
-const RePelishdProvider = require('../providers/repelishd.provider');
-const PeliCineHDProvider = require('../providers/pelicinehd.provider');
-const VerPelisTVProvider = require('../providers/verpelistv.provider');
-const PelisPlusHDProvider = require('../providers/pelisplushd.provider');
+// ============================================================
+// PROVEEDORES QUE FUNCIONAN (ACTIVOS)
+// ============================================================
 const EstrenosCinesaaProvider = require('../providers/estrenoscinesaa.provider');
-const PeliHDProvider = require('../providers/pelihd.provider');
-const DeTodoPeliculasProvider = require('../providers/detodopeliculas.provider');
 const CineCalidadProvider = require('../providers/cinecalidad.provider');
-const PelisPlusHD1Provider = require('../providers/pelisplushd1.provider');
-//const CineCalidadAMProvider = require('../providers/cinecalidadam.provider');
-const LaMovieProvider = require('../providers/lamovie.provider');
-const SeriesKaoProvider = require('../providers/serieskao.provider');
+
+// ============================================================
+// PROVEEDORES CAÍDOS O INESTABLES (COMENTADOS)
+// ============================================================
+// const SololatinoProvider = require('../providers/sololatino.provider');
+// const RePelishdProvider = require('../providers/repelishd.provider');
+// const PeliCineHDProvider = require('../providers/pelicinehd.provider');
+// const VerPelisTVProvider = require('../providers/verpelistv.provider');
+// const PelisPlusHDProvider = require('../providers/pelisplushd.provider');
+// const PeliHDProvider = require('../providers/pelihd.provider');
+// const DeTodoPeliculasProvider = require('../providers/detodopeliculas.provider');
+// const PelisPlusHD1Provider = require('../providers/pelisplushd1.provider');
+// const LaMovieProvider = require('../providers/lamovie.provider');
+// const SeriesKaoProvider = require('../providers/serieskao.provider');
+// const CineCalidadAMProvider = require('../providers/cinecalidadam.provider');
 
 class MovieService {
     constructor() {
         this.providers = {
-            sololatino: new SololatinoProvider(),
-            repelishd: new RePelishdProvider(),
-            pelicinehd: new PeliCineHDProvider(),
-            verpelistv: new VerPelisTVProvider(),
-            pelisplushd: new PelisPlusHDProvider(),
+            // ========== PROVEEDORES ACTIVOS ==========
             estrenoscinesaa: new EstrenosCinesaaProvider(),
-            pelihd: new PeliHDProvider(),
-            detodopeliculas: new DeTodoPeliculasProvider(),
             cinecalidad: new CineCalidadProvider(),
-            pelisplushd1: new PelisPlusHD1Provider(),
-            //cinecalidadam: new CineCalidadAMProvider(),
-            lamovie: new LaMovieProvider(),
-            serieskao: new SeriesKaoProvider(),  // ← NUEVO
+            
+            // ========== PROVEEDORES CAÍDOS (COMENTADOS) ==========
+            // sololatino: new SololatinoProvider(),
+            // repelishd: new RePelishdProvider(),
+            // pelicinehd: new PeliCineHDProvider(),
+            // verpelistv: new VerPelisTVProvider(),
+            // pelisplushd: new PelisPlusHDProvider(),
+            // pelihd: new PeliHDProvider(),
+            // detodopeliculas: new DeTodoPeliculasProvider(),
+            // pelisplushd1: new PelisPlusHD1Provider(),
+            // lamovie: new LaMovieProvider(),
+            // serieskao: new SeriesKaoProvider(),
         };
     }
 
@@ -35,14 +44,18 @@ class MovieService {
         const results = {};
 
         if (providerName && this.providers[providerName]) {
+            console.log(`🔍 Buscando solo en proveedor: ${providerName}`);
             results[providerName] = await this.providers[providerName].search(query);
         } else {
+            console.log(`🔍 Buscando en todos los proveedores activos: ${query}`);
             const searchPromises = Object.entries(this.providers).map(async ([name, provider]) => {
                 try {
+                    console.log(`🔄 Buscando en ${name}...`);
                     const result = await provider.search(query);
+                    console.log(`✅ ${name}: ${result.length} resultados`);
                     return { [name]: result };
                 } catch (error) {
-                    console.error(`Error in provider ${name}:`, error.message);
+                    console.error(`❌ Error in provider ${name}:`, error.message);
                     return { [name]: [] };
                 }
             });
@@ -55,17 +68,41 @@ class MovieService {
     }
 
     async getMovieInfo(url) {
+        console.log(`📄 MovieService.getMovieInfo(): ${url}`);
+        
+        // Método 1: Encontrar proveedor por dominio
         for (const [name, provider] of Object.entries(this.providers)) {
-            if (url.includes(provider.baseURL.replace('https://', ''))) {
+            // Verificar por baseURL
+            const baseUrlClean = provider.baseURL?.replace('https://', '').replace('http://', '');
+            if (baseUrlClean && url.includes(baseUrlClean)) {
+                console.log(`✅ Proveedor encontrado por baseURL: ${name}`);
                 return await provider.getInfo(url);
+            }
+            
+            // Verificar por dominios alternativos
+            if (provider.domains && Array.isArray(provider.domains)) {
+                for (const domain of provider.domains) {
+                    const domainClean = domain.replace('https://', '').replace('http://', '');
+                    if (url.includes(domainClean)) {
+                        console.log(`✅ Proveedor encontrado por domain: ${name}`);
+                        return await provider.getInfo(url);
+                    }
+                }
             }
         }
         
+        // Método 2: Fallback - intentar con todos los proveedores
+        console.log(`⚠️ No se encontró proveedor por dominio, intentando fallback...`);
         for (const [name, provider] of Object.entries(this.providers)) {
             try {
+                console.log(`🔄 Intentando con ${name}...`);
                 const info = await provider.getInfo(url);
-                if (info && info.title) return info;
-            } catch (e) {
+                if (info && info.title && info.title !== 'Sin título') {
+                    console.log(`✅ Éxito con ${name}: ${info.title}`);
+                    return info;
+                }
+            } catch (error) {
+                console.log(`❌ Falló ${name}: ${error.message}`);
                 continue;
             }
         }
