@@ -1083,56 +1083,32 @@ async function playMovie(url, title, provider) {
     modal.style.display = 'block';
 
     try {
-        // Obtener información de la película
+        // Llamar al endpoint /info
         const infoResponse = await fetchWithAuth(`${API_URL}/info?url=${encodeURIComponent(url)}`);
         const infoData = await infoResponse.json();
         
-        console.log('📦 infoData:', infoData);
+        console.log('📦 infoData recibido:', infoData);
         
-        let movie = infoData.data || infoData;
-        
-        // Si no hay información, crear un objeto básico
-        if (!movie || !movie.title) {
-            movie = {
-                title: title || 'Película',
-                synopsis: 'Sinopsis no disponible',
-                year: null,
-                downloadLinks: []
-            };
+        // Verificar si hay datos
+        if (!infoData.success || !infoData.data) {
+            throw new Error('No se recibieron datos de la película');
         }
         
-        // Renderizar modal con la información
+        const movie = infoData.data;
+        
+        // Renderizar el modal con la información
         renderMovieModal(movie);
         
-        // Buscar servidores
-        let servers = [];
-        
-        // Intentar obtener servidores del endpoint específico
-        try {
-            const serversResponse = await fetchWithAuth(`${API_URL}/servers?url=${encodeURIComponent(url)}&provider=${provider}`);
-            const serversData = await serversResponse.json();
-            if (serversData.success && serversData.servers && serversData.servers.length > 0) {
-                servers = serversData.servers;
-            }
-        } catch (err) {
-            console.log('No se pudo obtener servidores del endpoint /servers');
-        }
-        
-        // Fallback: usar downloadLinks de la información
-        if (servers.length === 0 && movie.downloadLinks && movie.downloadLinks.length > 0) {
-            servers = movie.downloadLinks;
-        }
-        
-        // Si hay servidores, mostrarlos
-        if (servers.length > 0) {
-            addServersToModal([{ provider: provider, servers: servers }]);
+        // Mostrar servidores si existen
+        if (movie.downloadLinks && movie.downloadLinks.length > 0) {
+            addServersToModal([{ provider: provider, servers: movie.downloadLinks }]);
         } else {
             const serversSection = document.getElementById('serversSection');
             if (serversSection) {
                 serversSection.innerHTML = `
                     <div class="no-results">
-                        ⚠️ No se encontraron servidores para esta película<br>
-                        <a href="${url}" target="_blank" class="server-btn" style="margin-top: 15px;">🔗 Abrir enlace directamente</a>
+                        ⚠️ No se encontraron servidores<br>
+                        <a href="${url}" target="_blank" class="server-btn">🔗 Abrir enlace directamente</a>
                     </div>
                 `;
             }
@@ -1142,14 +1118,14 @@ async function playMovie(url, title, provider) {
         console.error('Error en playMovie:', error);
         modalBody.innerHTML = `
             <div class="no-results">
-                ❌ Error al cargar la película<br>
-                <small>${escapeHtml(error.message)}</small><br><br>
+                ❌ ${error.message}<br>
                 <a href="${url}" target="_blank" class="server-btn">🔗 Abrir enlace directamente</a>
-                <button onclick="closeModal()" class="server-btn" style="background:#333">Cerrar</button>
+                <button onclick="closeModal()" class="server-btn">Cerrar</button>
             </div>
         `;
     }
 }
+
 
 function renderMovieModal(movie) {
     const modalBody = document.getElementById('modalBody');
