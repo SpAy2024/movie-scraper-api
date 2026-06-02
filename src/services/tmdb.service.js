@@ -3,7 +3,6 @@ const axios = require('axios');
 class TMDBService {
     constructor() {
         this.apiKeys = [
-            
             '55c0bb848e296dd8d81046079236067d',
             '39151834c95219c3cae772b4465079d7'
         ];
@@ -77,7 +76,6 @@ class TMDBService {
         }
     }
 
-    // Nueva función: búsqueda por actor/actriz
     async searchByPerson(personName, language = 'es') {
         const query = encodeURIComponent(personName);
         const url = `${this.baseUrl}/search/person?api_key=${this.getApiKey()}&query=${query}&language=${language}`;
@@ -91,7 +89,6 @@ class TMDBService {
                 const person = response.data.results[0];
                 console.log(`✅ Persona encontrada: ${person.name} (ID: ${person.id})`);
                 
-                // Obtener películas de esta persona
                 const moviesUrl = `${this.baseUrl}/person/${person.id}/movie_credits?api_key=${this.getApiKey()}&language=${language}`;
                 const moviesResponse = await axios.get(moviesUrl);
                 
@@ -124,7 +121,6 @@ class TMDBService {
         }
     }
 
-    // Nueva función: búsqueda por género
     async searchByGenre(genreId, page = 1, language = 'es') {
         const url = `${this.baseUrl}/discover/movie?api_key=${this.getApiKey()}&with_genres=${genreId}&page=${page}&sort_by=popularity.desc&language=${language}`;
         
@@ -157,7 +153,6 @@ class TMDBService {
         }
     }
 
-    // Obtener lista de géneros
     async getGenres(language = 'es') {
         const url = `${this.baseUrl}/genre/movie/list?api_key=${this.getApiKey()}&language=${language}`;
         
@@ -200,6 +195,9 @@ class TMDBService {
         }
     }
 
+    // ============================================================
+    // MÉTODO PRINCIPAL - VERSIÓN SIMPLIFICADA SIN SERVER-RESOLVER
+    // ============================================================
     async searchAndFindInProviders(title, year = null) {
         console.log(`\n🎯 Buscando servidores para: "${title}" ${year ? `(${year})` : ''}`);
         
@@ -209,53 +207,17 @@ class TMDBService {
             return { success: false, message: tmdbResult.message };
         }
         
-        const searchTitles = [
-            tmdbResult.title,
-            tmdbResult.originalTitle,
-            title
-        ].filter((v, i, a) => a.indexOf(v) === i);
-        
+        // Buscar en proveedores usando el título de TMDB
         const movieService = require('./movie.service');
         const allResults = {};
-        const allServers = [];
         
-        for (const searchTitle of searchTitles) {
-            console.log(`\n📡 Buscando en proveedores: "${searchTitle}"`);
-            
-            const results = await movieService.searchAll(searchTitle);
-            
-            for (const [provider, movies] of Object.entries(results)) {
-                if (!allResults[provider]) allResults[provider] = [];
-                
-                for (const movie of movies) {
-                    const exists = allResults[provider].some(m => m.url === movie.url);
-                    if (!exists) {
-                        allResults[provider].push(movie);
-                    }
-                }
-            }
-        }
+        console.log(`\n📡 Buscando en proveedores: "${tmdbResult.title}"`);
         
-        console.log(`\n🔍 Obteniendo servidores de los proveedores...`);
+        const results = await movieService.searchAll(tmdbResult.title);
         
-        const serverResolver = require('./server-resolver.service');
-        
-        for (const [provider, movies] of Object.entries(allResults)) {
-            for (const movie of movies.slice(0, 3)) {
-                try {
-                    const servers = await serverResolver.extraerServidores(movie.url, provider);
-                    
-                    if (servers && servers.length > 0) {
-                        allServers.push({
-                            provider: provider,
-                            movieTitle: movie.title,
-                            movieUrl: movie.url,
-                            servers: servers.filter(s => s.tipo === 'iframe' || s.url)
-                        });
-                    }
-                } catch (err) {
-                    console.log(`   Error obteniendo servidores de ${provider}: ${err.message}`);
-                }
+        for (const [provider, movies] of Object.entries(results)) {
+            if (movies && movies.length > 0) {
+                allResults[provider] = movies;
             }
         }
         
@@ -273,8 +235,9 @@ class TMDBService {
                 voteCount: tmdbResult.voteCount
             },
             providers: allResults,
-            servers: allServers,
-            totalServers: allServers.reduce((acc, p) => acc + p.servers.length, 0)
+            servers: [],
+            totalServers: 0,
+            message: 'Los servidores se cargarán al hacer clic en la película'
         };
     }
 }
