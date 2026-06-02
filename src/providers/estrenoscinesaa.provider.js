@@ -202,9 +202,9 @@ class EstrenosCinesaaProvider extends BaseProvider {
     }
 
     async getInfo(url) {
-        console.log(`📄 Obteniendo info de ${this.name}: ${url}`);
-        const $ = await this.fetchHTML(url);
-        if (!$) return null;
+    console.log(`📄 Obteniendo info de ${this.name}: ${url}`);
+    const $ = await this.fetchHTML(url);
+    if (!$) return null;
         
         // Título
         let title = $('h1').first().text().trim();

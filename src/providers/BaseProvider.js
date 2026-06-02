@@ -1,4 +1,3 @@
-const StealthClient = require('../utils/stealth-client');
 const axios = require('axios');
 const cheerio = require('cheerio');
 
@@ -8,35 +7,11 @@ class BaseProvider {
         this.baseURL = baseURL;
         this.pathPrefix = pathPrefix;
         this.domains = [baseURL];
-        this.stealthClient = null;
     }
 
-    async fetchHTML(url, forceStealth = true) {
+    async fetchHTML(url) {
         console.log(`🌐 Fetching: ${url}`);
         
-        if (forceStealth) {
-            return await this.fetchWithStealth(url);
-        } else {
-            return await this.fetchWithAxios(url);
-        }
-    }
-
-    async fetchWithStealth(url) {
-        try {
-            if (!this.stealthClient) {
-                this.stealthClient = new StealthClient();
-                await this.stealthClient.init();
-            }
-            
-            const html = await this.stealthClient.goto(url);
-            return cheerio.load(html);
-        } catch (error) {
-            console.error(`❌ Stealth fetch failed: ${error.message}`);
-            return await this.fetchWithAxios(url);
-        }
-    }
-
-    async fetchWithAxios(url) {
         try {
             const response = await axios.get(url, {
                 headers: {
@@ -48,11 +23,11 @@ class BaseProvider {
                     'Connection': 'keep-alive',
                     'Upgrade-Insecure-Requests': '1'
                 },
-                timeout: 30000
+                timeout: 15000
             });
             return cheerio.load(response.data);
         } catch (error) {
-            console.error(`❌ Axios fetch failed: ${error.message}`);
+            console.error(`❌ Fetch failed: ${error.message}`);
             return null;
         }
     }
