@@ -79,14 +79,16 @@ class MovieService {
   }
   
   async getMovieServers(url, providerName) {
-    const provider = this.providers[providerName];
-    if (!provider) {
-      throw new Error(`Proveedor no encontrado: ${providerName}`);
-    }
-    
-    const info = await provider.getInfo(url);
-    return info.downloadLinks || [];
+  console.log(`🎬 getMovieServers: ${providerName} - ${url}`);
+  
+  const provider = this.providers[providerName];
+  if (!provider) {
+    throw new Error(`Proveedor no encontrado: ${providerName}`);
   }
+  
+  const info = await provider.getInfo(url);
+  return info?.downloadLinks || [];
+}
   
   getAvailableProviders() {
     return Object.keys(this.providers);

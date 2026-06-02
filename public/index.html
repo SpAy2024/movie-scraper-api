@@ -1072,44 +1072,58 @@ async function getMovieAndServers(tmdbId) {
     }
 }
 
-async function playMovie(url, title, provider) {
-    const modal = document.getElementById('modal');
-    const modalBody = document.getElementById('modalBody');
-    
-    modalBody.innerHTML = '<div class="loading-spinner"></div>';
-    modal.style.display = 'block';
 
-    try {
-        const infoResponse = await fetchWithAuth(`${API_URL}/info?url=${encodeURIComponent(url)}`);
-        const infoData = await infoResponse.json();
-        const movie = infoData.data;
-        
-        let servers = [];
-        if (provider) {
-            const serversResponse = await fetchWithAuth(`${API_URL}/servers?url=${encodeURIComponent(url)}&provider=${provider}`);
-            const serversData = await serversResponse.json();
-            if (serversData.servidores && serversData.servidores.iframes) {
-                servers = serversData.servidores.iframes;
-            }
-        }
-        
-        if (servers.length === 0 && movie.downloadLinks) {
-            servers = movie.downloadLinks.map(link => ({
-                server: link.server || 'Servidor',
-                url: link.url
-            }));
-        }
-        
-        renderMovieModal(movie);
-        if (servers.length > 0) {
-            addServersToModal([{ provider: provider, servers: servers }]);
-        }
-        
-    } catch (error) {
-        console.error('Error:', error);
-        modalBody.innerHTML = '<div class="no-results">❌ Error al cargar</div>';
+async function playMovie(url, title, provider) {
+  console.log('🎬 playMovie:', { url, title, provider });
+  
+  const modal = document.getElementById('modal');
+  const modalBody = document.getElementById('modalBody');
+  
+  modalBody.innerHTML = '<div class="loading-spinner"></div>';
+  modal.style.display = 'block';
+
+  try {
+    // Primero obtener información básica
+    const infoResponse = await fetchWithAuth(`${API_URL}/info?url=${encodeURIComponent(url)}`);
+    const infoData = await infoResponse.json();
+    const movie = infoData.data;
+    
+    renderMovieModal(movie);
+    
+    // Luego obtener servidores específicos
+    const serversResponse = await fetchWithAuth(`${API_URL}/servers?url=${encodeURIComponent(url)}&provider=${provider}`);
+    const serversData = await serversResponse.json();
+    
+    let servers = [];
+    if (serversData.success && serversData.servers) {
+      servers = serversData.servers;
+    } else if (movie.downloadLinks) {
+      servers = movie.downloadLinks;
     }
+    
+    if (servers.length > 0) {
+      addServersToModal([{ provider: provider, servers: servers }]);
+    } else {
+      const serversSection = document.getElementById('serversSection');
+      if (serversSection) {
+        serversSection.innerHTML = '<div class="no-results">⚠️ No se encontraron servidores para esta película</div>';
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error en playMovie:', error);
+    modalBody.innerHTML = `
+      <div class="no-results">
+        ❌ Error al cargar la película<br>
+        <small>${error.message}</small><br><br>
+        <a href="${url}" target="_blank" class="server-btn">🔗 Abrir enlace directamente</a>
+        <button onclick="closeModal()" class="server-btn">Cerrar</button>
+      </div>
+    `;
+  }
 }
+
+
 
 function renderMovieModal(movie) {
     const modalBody = document.getElementById('modalBody');
