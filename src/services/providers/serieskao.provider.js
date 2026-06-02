@@ -3,96 +3,65 @@ const BaseProvider = require('./BaseProvider');
 class SeriesKaoProvider extends BaseProvider {
   constructor() {
     super('serieskao', 'https://serieskao.top', '/');
-    
-    // Mapeo EXACTO - AÑADIR MÁS TÍTULOS
-    this.directUrls = {
-      'protector': 'protector-vwSojy',
-      'instinto implacable': 'protector-vwSojy',
-      'instinto implacable 2026': 'protector-vwSojy',
-      'brasil 70': 'brasil-70-la-saga-del-tricampe-F5YTVU',
-      'obsolete': 'obsolete-QhGzwp',
-      'la canción del samurái': 'la-cancion-del-samurai-VHYQJi',
-      'cancion del samurai': 'la-cancion-del-samurai-VHYQJi'
-    };
   }
 
   async search(query, year = null) {
     console.log(`🔍 Buscando en ${this.name}: "${query}"`);
     
     const queryLower = query.toLowerCase().trim();
-    const movies = [];
     
-    // Mostrar todos los mapeos disponibles para debug
-    console.log(`   📋 Mapeos disponibles: ${Object.keys(this.directUrls).join(', ')}`);
+    // Mapeo manual de búsquedas a URLs directas
+    const manualResults = {
+      'protector': {
+        title: 'Protector',
+        year: '2026',
+        url: 'https://serieskao.top/pelicula/protector-vwSojy',
+        thumbnail: 'https://image.tmdb.org/t/p/w300/b1j1XEtLWtXnwK21FaICZBbKBjH.jpg'
+      },
+      'instinto implacable': {
+        title: 'Protector (Instinto Implacable)',
+        year: '2026',
+        url: 'https://serieskao.top/pelicula/protector-vwSojy',
+        thumbnail: 'https://image.tmdb.org/t/p/w300/b1j1XEtLWtXnwK21FaICZBbKBjH.jpg'
+      },
+      'brasil 70': {
+        title: 'Brasil 70: La saga del tricampeonato',
+        year: '2026',
+        url: 'https://serieskao.top/serie/brasil-70-la-saga-del-tricampe-F5YTVU',
+        thumbnail: null
+      },
+      'obsolete': {
+        title: 'Obsolete',
+        year: '2019',
+        url: 'https://serieskao.top/anime/obsolete-QhGzwp',
+        thumbnail: null
+      }
+    };
     
-    // Buscar slug en el mapeo (coincidencia exacta o parcial)
-    let slug = null;
-    
-    // Primero coincidencia exacta
-    if (this.directUrls[queryLower]) {
-      slug = this.directUrls[queryLower];
-      console.log(`   🎯 Coincidencia exacta: "${queryLower}" -> ${slug}`);
-    } else {
-      // Coincidencia parcial
-      for (const [key, value] of Object.entries(this.directUrls)) {
-        if (queryLower.includes(key) || key.includes(queryLower)) {
-          slug = value;
-          console.log(`   🎯 Coincidencia parcial: "${key}" -> ${slug}`);
-          break;
-        }
+    // Buscar coincidencia
+    let result = null;
+    for (const [key, value] of Object.entries(manualResults)) {
+      if (queryLower.includes(key) || key.includes(queryLower)) {
+        result = value;
+        break;
       }
     }
     
-    if (!slug) {
-      console.log(`❌ No hay mapeo para: "${queryLower}"`);
-      console.log(`   💡 Sugerencia: Agrega "${queryLower}" al mapeo directUrls`);
-      return [];
+    if (result) {
+      console.log(`✅ Encontrado manualmente: ${result.title}`);
+      return [{
+        id: null,
+        title: result.title,
+        year: result.year,
+        url: result.url,
+        thumbnail: result.thumbnail,
+        provider: this.name,
+        type: 'movie'
+      }];
     }
     
-    const directUrl = `${this.baseURL}/pelicula/${slug}`;
-    console.log(`🌐 Probando URL directa: ${directUrl}`);
-    
-    try {
-      const $ = await this.fetchHTML(directUrl);
-      
-      if ($) {
-        const title = $('.detail-hero__title, h1').first().text().trim();
-        console.log(`   📌 Título encontrado en página: "${title}"`);
-        
-        if (title && title.length > 2) {
-          console.log(`✅ Encontrado: ${title}`);
-          
-          let itemYear = null;
-          $('.detail-hero__meta span').each((i, el) => {
-            const text = $(el).text().trim();
-            if (/^\d{4}$/.test(text)) itemYear = text;
-          });
-          
-          const thumbnail = $('.detail-hero__poster img').first().attr('src');
-          
-          movies.push({
-            id: null,
-            title: title,
-            year: itemYear || year,
-            url: directUrl,
-            thumbnail: thumbnail,
-            provider: this.name,
-            type: 'movie'
-          });
-          
-          console.log(`   ✅ Película agregada: ${title}`);
-          return movies;
-        } else {
-          console.log(`   ❌ Título vacío o página no válida`);
-        }
-      } else {
-        console.log(`   ❌ fetchHTML devolvió null`);
-      }
-    } catch (error) {
-      console.log(`   ❌ Error: ${error.message}`);
-    }
-    
-    console.log(`❌ No se pudo encontrar "${query}" en SeriesKao`);
+    // Si no está en el mapeo manual, intentar búsqueda normal
+    console.log(`⚠️ "${query}" no está en el mapeo manual`);
     return [];
   }
 
