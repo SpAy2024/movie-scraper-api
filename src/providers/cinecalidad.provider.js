@@ -2,17 +2,15 @@ const BaseProvider = require('./BaseProvider');
 
 class CineCalidadProvider extends BaseProvider {
     constructor() {
-        super('cinecalidad', 'https://www.cinecalidad.ec', '/ver-pelicula/');
-        
-        // Todos los dominios conocidos de CineCalidad
-        this.domains = [
-            'https://www.cinecalidad.ec',
-            'https://www.cinecalidad.rs',
-            'https://cinecalidad.onl',
-            'https://www.cinecalidad.am',
-            'https://cinecalidad.am'
-        ];
-    }
+    super('cinecalidad', 'https://cinecalidad.foo', '/ver-pelicula/');
+    
+    this.domains = [
+        'https://cinecalidad.foo',
+        'https://cinecalidad.mx',
+        'https://www.cinecalidad.pm',
+        'https://cinecalidad.run'
+    ];
+}
 
     // Detectar automáticamente qué dominio usar para una URL
     _getDomainForUrl(url) {
