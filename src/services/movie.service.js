@@ -8,16 +8,16 @@ const CineCalidadProvider = require('../providers/cinecalidad.provider');
 // PROVEEDORES CAÍDOS O INESTABLES (COMENTADOS)
 // ============================================================
 // const SololatinoProvider = require('../providers/sololatino.provider');
-// const RePelishdProvider = require('../providers/repelishd.provider');
-// const PeliCineHDProvider = require('../providers/pelicinehd.provider');
+ const RePelishdProvider = require('../providers/repelishd.provider');
+ const PeliCineHDProvider = require('../providers/pelicinehd.provider');
 // const VerPelisTVProvider = require('../providers/verpelistv.provider');
-// const PelisPlusHDProvider = require('../providers/pelisplushd.provider');
-// const PeliHDProvider = require('../providers/pelihd.provider');
-// const DeTodoPeliculasProvider = require('../providers/detodopeliculas.provider');
-// const PelisPlusHD1Provider = require('../providers/pelisplushd1.provider');
+ const PelisPlusHDProvider = require('../providers/pelisplushd.provider');
+ const PeliHDProvider = require('../providers/pelihd.provider');
+ const DeTodoPeliculasProvider = require('../providers/detodopeliculas.provider');
+ const PelisPlusHD1Provider = require('../providers/pelisplushd1.provider');
 // const LaMovieProvider = require('../providers/lamovie.provider');
-// const SeriesKaoProvider = require('../providers/serieskao.provider');
-// const CineCalidadAMProvider = require('../providers/cinecalidadam.provider');
+ const SeriesKaoProvider = require('../providers/serieskao.provider');
+ const CineCalidadAMProvider = require('../providers/cinecalidadam.provider');
 
 class MovieService {
     constructor() {
@@ -28,15 +28,15 @@ class MovieService {
             
             // ========== PROVEEDORES CAÍDOS (COMENTADOS) ==========
             // sololatino: new SololatinoProvider(),
-            // repelishd: new RePelishdProvider(),
-            // pelicinehd: new PeliCineHDProvider(),
+             repelishd: new RePelishdProvider(),
+             pelicinehd: new PeliCineHDProvider(),
             // verpelistv: new VerPelisTVProvider(),
-            // pelisplushd: new PelisPlusHDProvider(),
-            // pelihd: new PeliHDProvider(),
-            // detodopeliculas: new DeTodoPeliculasProvider(),
-            // pelisplushd1: new PelisPlusHD1Provider(),
+             pelisplushd: new PelisPlusHDProvider(),
+             pelihd: new PeliHDProvider(),
+             detodopeliculas: new DeTodoPeliculasProvider(),
+             pelisplushd1: new PelisPlusHD1Provider(),
             // lamovie: new LaMovieProvider(),
-            // serieskao: new SeriesKaoProvider(),
+            serieskao: new SeriesKaoProvider(),
         };
     }
 

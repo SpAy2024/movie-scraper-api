@@ -548,96 +548,196 @@ async extraerServidoresCineCalidad(peliculaUrl) {
 
     // ==================== 6. ESTRENOSCINESAA ====================
     async extraerServidoresEstrenosCinesaa(peliculaUrl) {
-        console.log(`🎬 Extrayendo servidores de estrenoscinesaa: ${peliculaUrl}`);
-        const servidores = [];
+    console.log(`🎬 Extrayendo servidores de estrenoscinesaa: ${peliculaUrl}`);
+    const servidores = [];
+    
+    try {
+        const response = await axios.get(peliculaUrl, { 
+            headers: this.headers,
+            timeout: 15000
+        });
+        const $ = cheerio.load(response.data);
         
-        try {
-            const response = await axios.get(peliculaUrl, { headers: this.headers });
-            const $ = cheerio.load(response.data);
+        // Extraer título de la película
+        const titulo = $('h1').first().text().trim();
+        console.log(`📽️ Película: ${titulo}`);
+        
+        // Buscar enlaces en la tabla de descargas
+        const enlaces = [];
+        
+        $('a[href*="/links/"]').each((i, el) => {
+            const href = $(el).attr('href');
+            const row = $(el).closest('tr');
+            const calidad = row.find('td:nth-child(2)').text().trim();
+            const idioma = row.find('td:nth-child(3)').text().trim();
+            const size = row.find('td:nth-child(4)').text().trim();
+            const serverName = $(el).text().trim() || 'Descarga';
             
-            const enlaces = [];
-            $('a[href*="/links/"]').each((i, el) => {
-                const href = $(el).attr('href');
-                if (href && href.includes('/links/')) {
-                    enlaces.push(href);
-                }
-            });
-            
-            for (const enlace of enlaces) {
-                try {
-                    const iframeUrl = await this.resolverEnlaceEstrenos(enlace);
-                    const servidor = this.identificarServidor(iframeUrl);
-                    servidores.push({
-                        server: servidor,
-                        url: iframeUrl,
-                        tipo: 'iframe',
-                        calidad: 'HD',
-                    });
-                } catch(e) {}
+            if (href && href.includes('/links/')) {
+                enlaces.push({
+                    url: href,
+                    quality: calidad || 'HD',
+                    language: idioma || 'Latino',
+                    size: size,
+                    serverName: serverName
+                });
             }
-            
-            console.log(`✅ EstrenosCinesaa: ${servidores.length} servidores`);
-            
-        } catch (error) {
-            console.error(`Error estrenoscinesaa: ${error.message}`);
-        }
+        });
         
-        return servidores;
-    }
-
-    async resolverEnlaceEstrenos(linkUrl) {
-        try {
-            let currentUrl = linkUrl;
-            let maxIntentos = 10;
-            let intento = 0;
-            
-            while (intento < maxIntentos) {
-                const response = await axios.get(currentUrl, {
-                    headers: this.headers,
-                    maxRedirects: 0,
-                    validateStatus: status => status < 400 || status === 302,
-                    timeout: 15000
+        console.log(`📦 Encontrados ${enlaces.length} enlaces de descarga`);
+        
+        // Procesar cada enlace
+        for (const enlace of enlaces) {
+            try {
+                const iframeUrl = await this.resolverEnlaceEstrenos(enlace.url);
+                
+                // Identificar el tipo de servidor por la URL
+                const servidorInfo = this.identificarServidor(iframeUrl);
+                
+                servidores.push({
+                    server: servidorInfo.nombre || enlace.serverName || 'Servidor',
+                    url: iframeUrl,
+                    tipo: 'iframe',
+                    calidad: enlace.quality || 'HD',
+                    idioma: enlace.language || 'Latino',
+                    size: enlace.size
                 });
                 
-                if (response.headers.location) {
-                    currentUrl = response.headers.location;
-                    intento++;
-                    continue;
-                }
+                console.log(`   ✅ ${servidorInfo.nombre} - ${iframeUrl.substring(0, 60)}...`);
                 
-                const $ = cheerio.load(response.data);
-                
-                const metaRefresh = $('meta[http-equiv="refresh"]').attr('content');
-                if (metaRefresh) {
-                    const match = metaRefresh.match(/url=(.+)$/i);
-                    if (match) {
-                        currentUrl = match[1];
-                        intento++;
-                        continue;
-                    }
-                }
-                
-                const iframe = $('iframe').attr('src');
-                if (iframe && iframe.includes('http')) {
-                    return iframe;
-                }
-                
-                const continueLink = $('a:contains("Continuar")').attr('href');
-                if (continueLink && continueLink !== '#') {
-                    currentUrl = continueLink;
-                    intento++;
-                    continue;
-                }
-                
-                break;
+            } catch (err) {
+                console.log(`   ❌ Error resolviendo enlace: ${err.message}`);
             }
-            
-            return currentUrl;
-            
-        } catch (error) {
-            return linkUrl;
+        }
+        
+        // También buscar iframes directos en la página
+        $('iframe').each((i, el) => {
+            const src = $(el).attr('src');
+            if (src && src.startsWith('http')) {
+                const servidorInfo = this.identificarServidor(src);
+                if (!servidores.some(s => s.url === src)) {
+                    servidores.push({
+                        server: servidorInfo.nombre || `Servidor ${i+1}`,
+                        url: src,
+                        tipo: 'iframe',
+                        calidad: 'HD',
+                        idioma: 'Latino'
+                    });
+                }
+            }
+        });
+        
+        console.log(`✅ EstrenosCinesaa: ${servidores.length} servidores identificados`);
+        
+    } catch (error) {
+        console.error(`❌ Error estrenoscinesaa: ${error.message}`);
+    }
+    
+    return servidores;
+}
+
+// Mejorar el método identificarServidor
+identificarServidor(url) {
+    const servidores = [
+        { nombre: 'StreamWish', patrones: [/streamwish\.(to|com)/, /streamwish/i] },
+        { nombre: 'Filemoon', patrones: [/filemoon\.sx/, /filemoon/i] },
+        { nombre: 'VidHide', patrones: [/vidhide\.com/, /vidhide/i] },
+        { nombre: 'VOE', patrones: [/voe\.sx/, /voe/i] },
+        { nombre: 'Goodstream', patrones: [/goodstream\.one/, /goodstream/i] },
+        { nombre: 'Hlswish', patrones: [/hlswish\.com/, /hlswish/i] },
+        { nombre: 'Vimeos', patrones: [/vimeos\.net/, /vimeos/i] },
+        { nombre: 'Doodstream', patrones: [/doodstream\.com/, /dood/i] },
+        { nombre: 'Uqload', patrones: [/uqload\.(com|is)/, /uqload/i] },
+        { nombre: 'Fembed', patrones: [/fembed\.com/, /fembed/i] },
+        { nombre: 'Mega', patrones: [/mega\.nz/, /mega/i] },
+        { nombre: 'MediaFire', patrones: [/mediafire\.com/, /mediafire/i] },
+        { nombre: '1Fichier', patrones: [/1fichier\.com/, /1fichier/i] },
+        { nombre: 'Upstream', patrones: [/upstream\.to/, /upstream/i] },
+        { nombre: 'YouTube', patrones: [/youtube\.com/, /youtu\.be/] }
+    ];
+    
+    for (const servidor of servidores) {
+        for (const patron of servidor.patrones) {
+            if (patron.test(url)) {
+                console.log(`   🔍 Identificado: ${servidor.nombre} <- ${url.substring(0, 80)}`);
+                return { nombre: servidor.nombre, url: url };
+            }
         }
     }
+    
+    console.log(`   ❓ No identificado: ${url.substring(0, 80)}`);
+    return { nombre: 'Servidor', url: url };
+}
+
+   async resolverEnlaceEstrenos(linkUrl) {
+    console.log(`🔗 Resolviendo enlace: ${linkUrl}`);
+    
+    try {
+        let currentUrl = linkUrl;
+        let maxIntentos = 10;
+        let intento = 0;
+        
+        while (intento < maxIntentos) {
+            const response = await axios.get(currentUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Accept': 'text/html,application/xhtml+xml'
+                },
+                maxRedirects: 0,
+                validateStatus: status => status < 400 || status === 302,
+                timeout: 15000
+            });
+            
+            // Seguir redirecciones
+            if (response.headers.location) {
+                currentUrl = response.headers.location;
+                intento++;
+                console.log(`   🔄 Redirigiendo a: ${currentUrl}`);
+                continue;
+            }
+            
+            const $ = cheerio.load(response.data);
+            
+            // Buscar iframe
+            const iframe = $('iframe').first().attr('src');
+            if (iframe && iframe.startsWith('http')) {
+                console.log(`   ✅ Iframe encontrado: ${iframe.substring(0, 80)}...`);
+                return iframe;
+            }
+            
+            // Buscar meta refresh
+            const metaRefresh = $('meta[http-equiv="refresh"]').attr('content');
+            if (metaRefresh) {
+                const match = metaRefresh.match(/url=(.+)$/i);
+                if (match) {
+                    currentUrl = match[1];
+                    intento++;
+                    console.log(`   🔄 Meta refresh a: ${currentUrl}`);
+                    continue;
+                }
+            }
+            
+            // Buscar enlace de continuación
+            const continueLink = $('a:contains("Continuar"), a:contains("Click aquí"), a:contains("Ir al enlace")').first().attr('href');
+            if (continueLink && continueLink !== '#' && continueLink.startsWith('http')) {
+                currentUrl = continueLink;
+                intento++;
+                console.log(`   🔄 Enlace continuar a: ${currentUrl}`);
+                continue;
+            }
+            
+            // Si llegamos aquí, no hay más redirecciones
+            break;
+        }
+        
+        console.log(`   ⚠️ No se encontró iframe, devolviendo: ${currentUrl}`);
+        return currentUrl;
+        
+    } catch (error) {
+        console.error(`   ❌ Error resolviendo: ${error.message}`);
+        return linkUrl;
+    }
+}
 
     // ==================== 7. PELIHD ====================
     async extraerServidoresPeliHD(peliculaUrl) {
