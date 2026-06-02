@@ -1182,7 +1182,7 @@ function addServersToModal(serversList) {
 }
 
 // Reemplaza la función openPlayer
-function openPlayer(url) {
+async function openPlayer(url) {
     console.log(`🎬 Abriendo reproductor con URL: ${url}`);
     
     const playerFrame = document.getElementById('playerFrame');
@@ -1191,38 +1191,68 @@ function openPlayer(url) {
         return;
     }
     
-    // Limpiar contenido anterior
     playerFrame.style.display = 'block';
     
-    // Para SeriesKao y enlaces similares, abrir en nueva pestaña
-    if (url.includes('serieskao.top') || url.includes('/vidurl/')) {
-        playerFrame.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px; text-align: center; padding: 20px;">
-                <p style="color: #fff; font-size: 16px;">El contenido se abrirá en una nueva pestaña</p>
-                <button onclick="window.open('${url}', '_blank')" class="server-btn" style="padding: 12px 24px; font-size: 16px;">
-                    🔗 Abrir enlace
-                </button>
-                <p style="color: #888; font-size: 12px;">Nota: Algunos sitios requieren que veas el contenido directamente en su página</p>
-            </div>
-        `;
-    } 
+    // Caso 1: Es un enlace de estrenoscinesaa.com/links/ (requiere resolución)
+    if (url.includes('estrenoscinesaa.com/links/')) {
+        console.log('🔄 Resolviendo enlace de estrenoscinesaa...');
+        playerFrame.innerHTML = '<div class="loading-spinner"></div>';
+        
+        try {
+            // Llamar al backend para resolver el enlace
+            const response = await fetch('/api/v1/movies/resolve-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: url })
+            });
+            const data = await response.json();
+            
+            if (data.success && data.resolvedUrl) {
+                console.log('✅ Enlace resuelto:', data.resolvedUrl);
+                // Abrir el enlace resuelto en nueva pestaña
+                window.open(data.resolvedUrl, '_blank');
+                playerFrame.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px; text-align: center; padding: 20px;">
+                        <p style="color: #fff; font-size: 16px;">El contenido se abrirá en una nueva pestaña</p>
+                        <button onclick="window.open('${data.resolvedUrl}', '_blank')" class="server-btn" style="padding: 12px 24px; font-size: 16px;">
+                            🔗 Abrir enlace
+                        </button>
+                        <p style="color: #888; font-size: 12px;">Nota: Algunos sitios requieren que veas el contenido directamente en su página</p>
+                    </div>
+                `;
+            } else {
+                throw new Error('No se pudo resolver el enlace');
+            }
+        } catch (error) {
+            console.error('❌ Error resolviendo enlace:', error);
+            playerFrame.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px; text-align: center; padding: 20px;">
+                    <p style="color: #ff4444; font-size: 16px;">No se pudo resolver el enlace</p>
+                    <button onclick="window.open('${url}', '_blank')" class="server-btn" style="padding: 12px 24px; font-size: 16px;">
+                        🔗 Abrir enlace directamente
+                    </button>
+                </div>
+            `;
+        }
+    }
+    // Caso 2: YouTube
+    else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        let videoId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
+        playerFrame.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
+    }
+    // Caso 3: Video directo
     else if (url.includes('.mp4') || url.includes('.m3u8') || url.includes('.mkv')) {
-        // Video directo
         playerFrame.innerHTML = `<video controls autoplay style="width: 100%; height: 100%;">
             <source src="${url}" type="video/mp4">
             Tu navegador no soporta reproducción de video.
         </video>`;
-    } 
-    else if (url.includes('youtube.com') || url.includes('youtu.be')) {
-        // YouTube embed
-        let videoId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
-        playerFrame.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen style="width: 100%; height: 100%;"></iframe>`;
     }
+    // Caso 4: Otros iframes
     else {
-        // Iframe para embebidos
         playerFrame.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width: 100%; height: 100%;"></iframe>`;
     }
 }
+
 
 // Añadir también una función para probar servidores manualmente desde consola
 window.testServer = function(url) {

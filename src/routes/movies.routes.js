@@ -212,39 +212,72 @@ router.get('/tmdb/genres', async (req, res) => {
 
 
 // Endpoint para resolver un enlace de descarga
+// Endpoint para resolver enlaces de estrenoscinesaa
 router.post('/resolve-link', async (req, res) => {
     const { url } = req.body;
     
     if (!url) {
-        return res.status(400).json({ error: 'Se requiere la URL del enlace' });
+        return res.status(400).json({ error: 'Se requiere la URL' });
     }
     
     try {
-        const resolverService = require('../services/resolver.service');
+        const axios = require('axios');
+        const cheerio = require('cheerio');
         
-        // Detectar qué tipo de enlace es
-        let resolvedUrl = url;
+        console.log(`🔍 Resolviendo enlace: ${url}`);
         
-        if (url.includes('estrenoscinesaa.com/links/')) {
-            resolvedUrl = await resolverService.resolveEstrenosCinesaa(url);
-        } else {
-            // Para otros proveedores
-            resolvedUrl = await resolverService.resolveUrl(url);
+        // Seguir redirecciones
+        let currentUrl = url;
+        let maxRedirects = 10;
+        let redirectCount = 0;
+        
+        while (redirectCount < maxRedirects) {
+            const response = await axios.get(currentUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                },
+                maxRedirects: 0,
+                validateStatus: status => status < 400 || status === 302
+            });
+            
+            // Si hay redirección
+            if (response.headers.location) {
+                currentUrl = response.headers.location;
+                redirectCount++;
+                continue;
+            }
+            
+            // Buscar iframe en el HTML
+            const $ = cheerio.load(response.data);
+            const iframe = $('iframe').first().attr('src');
+            if (iframe && iframe.startsWith('http')) {
+                return res.json({ success: true, resolvedUrl: iframe });
+            }
+            
+            // Buscar meta refresh
+            const metaRefresh = $('meta[http-equiv="refresh"]').attr('content');
+            if (metaRefresh) {
+                const match = metaRefresh.match(/url=(.+)$/i);
+                if (match) {
+                    currentUrl = match[1];
+                    redirectCount++;
+                    continue;
+                }
+            }
+            
+            break;
         }
         
-        res.json({
-            success: true,
-            originalUrl: url,
-            resolvedUrl: resolvedUrl,
-        });
+        // Si no se encontró iframe, devolver la URL final
+        res.json({ success: true, resolvedUrl: currentUrl });
+        
     } catch (error) {
-        console.error('Error resolviendo enlace:', error);
-        res.status(500).json({
-            error: 'Error al resolver el enlace',
-            details: error.message,
-        });
+        console.error('Error resolviendo enlace:', error.message);
+        res.json({ success: false, error: error.message });
     }
 });
+
+
 
 // Endpoint para descargar directamente desde un enlace resuelto
 router.post('/download-from-link', async (req, res) => {
