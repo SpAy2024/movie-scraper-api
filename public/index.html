@@ -1074,61 +1074,99 @@ async function getMovieAndServers(tmdbId) {
 
 
 async function playMovie(url, title, provider) {
-  console.log('🎬 playMovie:', { url, title, provider });
-  
-  const modal = document.getElementById('modal');
-  const modalBody = document.getElementById('modalBody');
-  
-  modalBody.innerHTML = '<div class="loading-spinner"></div>';
-  modal.style.display = 'block';
+    console.log('🎬 playMovie:', { url, title, provider });
+    
+    const modal = document.getElementById('modal');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalBody.innerHTML = '<div class="loading-spinner"></div>';
+    modal.style.display = 'block';
 
-  try {
-    // Primero obtener información básica
-    const infoResponse = await fetchWithAuth(`${API_URL}/info?url=${encodeURIComponent(url)}`);
-    const infoData = await infoResponse.json();
-    const movie = infoData.data;
-    
-    renderMovieModal(movie);
-    
-    // Luego obtener servidores específicos
-    const serversResponse = await fetchWithAuth(`${API_URL}/servers?url=${encodeURIComponent(url)}&provider=${provider}`);
-    const serversData = await serversResponse.json();
-    
-    let servers = [];
-    if (serversData.success && serversData.servers) {
-      servers = serversData.servers;
-    } else if (movie.downloadLinks) {
-      servers = movie.downloadLinks;
+    try {
+        // Obtener información de la película
+        const infoResponse = await fetchWithAuth(`${API_URL}/info?url=${encodeURIComponent(url)}`);
+        const infoData = await infoResponse.json();
+        
+        console.log('📦 infoData:', infoData);
+        
+        let movie = infoData.data || infoData;
+        
+        // Si no hay información, crear un objeto básico
+        if (!movie || !movie.title) {
+            movie = {
+                title: title || 'Película',
+                synopsis: 'Sinopsis no disponible',
+                year: null,
+                downloadLinks: []
+            };
+        }
+        
+        // Renderizar modal con la información
+        renderMovieModal(movie);
+        
+        // Buscar servidores
+        let servers = [];
+        
+        // Intentar obtener servidores del endpoint específico
+        try {
+            const serversResponse = await fetchWithAuth(`${API_URL}/servers?url=${encodeURIComponent(url)}&provider=${provider}`);
+            const serversData = await serversResponse.json();
+            if (serversData.success && serversData.servers && serversData.servers.length > 0) {
+                servers = serversData.servers;
+            }
+        } catch (err) {
+            console.log('No se pudo obtener servidores del endpoint /servers');
+        }
+        
+        // Fallback: usar downloadLinks de la información
+        if (servers.length === 0 && movie.downloadLinks && movie.downloadLinks.length > 0) {
+            servers = movie.downloadLinks;
+        }
+        
+        // Si hay servidores, mostrarlos
+        if (servers.length > 0) {
+            addServersToModal([{ provider: provider, servers: servers }]);
+        } else {
+            const serversSection = document.getElementById('serversSection');
+            if (serversSection) {
+                serversSection.innerHTML = `
+                    <div class="no-results">
+                        ⚠️ No se encontraron servidores para esta película<br>
+                        <a href="${url}" target="_blank" class="server-btn" style="margin-top: 15px;">🔗 Abrir enlace directamente</a>
+                    </div>
+                `;
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error en playMovie:', error);
+        modalBody.innerHTML = `
+            <div class="no-results">
+                ❌ Error al cargar la película<br>
+                <small>${escapeHtml(error.message)}</small><br><br>
+                <a href="${url}" target="_blank" class="server-btn">🔗 Abrir enlace directamente</a>
+                <button onclick="closeModal()" class="server-btn" style="background:#333">Cerrar</button>
+            </div>
+        `;
     }
-    
-    if (servers.length > 0) {
-      addServersToModal([{ provider: provider, servers: servers }]);
-    } else {
-      const serversSection = document.getElementById('serversSection');
-      if (serversSection) {
-        serversSection.innerHTML = '<div class="no-results">⚠️ No se encontraron servidores para esta película</div>';
-      }
-    }
-    
-  } catch (error) {
-    console.error('Error en playMovie:', error);
-    modalBody.innerHTML = `
-      <div class="no-results">
-        ❌ Error al cargar la película<br>
-        <small>${error.message}</small><br><br>
-        <a href="${url}" target="_blank" class="server-btn">🔗 Abrir enlace directamente</a>
-        <button onclick="closeModal()" class="server-btn">Cerrar</button>
-      </div>
-    `;
-  }
 }
-
-
 
 function renderMovieModal(movie) {
     const modalBody = document.getElementById('modalBody');
-    const posterUrl = movie.posterPath || movie.poster_path;
+    
+    // Validar que movie existe
+    if (!movie) {
+        modalBody.innerHTML = '<div class="no-results">❌ No se pudo cargar la información de la película</div>';
+        return;
+    }
+    
+    const title = movie.title || movie.name || 'Sin título';
+    const posterUrl = movie.posterPath || movie.poster_path || movie.poster;
     const poster = posterUrl ? (posterUrl.startsWith('http') ? posterUrl : `https://image.tmdb.org/t/p/w500${posterUrl}`) : null;
+    const year = movie.year || (movie.release_date ? movie.release_date.split('-')[0] : '');
+    const rating = movie.voteAverage || movie.vote_average;
+    const runtime = movie.runtime;
+    const overview = movie.overview || movie.synopsis || 'Sinopsis no disponible.';
     
     modalBody.innerHTML = `
         <div class="video-container" id="videoContainer">
@@ -1137,18 +1175,29 @@ function renderMovieModal(movie) {
             </div>
         </div>
         <div class="modal-info">
-            <h2>${movie.title || movie.name || 'Sin título'}</h2>
+            <h2>${escapeHtml(title)}</h2>
             <div class="modal-meta">
-                ${movie.year || (movie.release_date ? movie.release_date.split('-')[0] : '') ? `<span>📅 ${movie.year || movie.release_date.split('-')[0]}</span>` : ''}
-                ${movie.vote_average ? `<span>⭐ ${movie.vote_average}/10</span>` : ''}
-                ${movie.runtime ? `<span>⏱️ ${movie.runtime} min</span>` : ''}
+                ${year ? `<span>📅 ${escapeHtml(year)}</span>` : ''}
+                ${rating ? `<span>⭐ ${parseFloat(rating).toFixed(1)}/10</span>` : ''}
+                ${runtime ? `<span>⏱️ ${runtime} min</span>` : ''}
             </div>
-            <div class="modal-synopsis">${movie.overview || 'Sinopsis no disponible.'}</div>
+            <div class="modal-synopsis">${escapeHtml(overview)}</div>
             <div class="servers-section" id="serversSection">
                 <div class="servers-title">🎬 BUSCANDO SERVIDORES...</div>
             </div>
         </div>
     `;
+}
+
+// Función auxiliar para escapar HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 
