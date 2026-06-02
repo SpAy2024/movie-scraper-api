@@ -65,59 +65,91 @@ class SeriesKaoProvider extends BaseProvider {
     return [];
   }
 
-  async getInfo(url) {
+   async getInfo(url) {
     console.log(`📄 ${this.name}.getInfo(): ${url}`);
-    const $ = await this.fetchHTML(url);
-    if (!$) return null;
     
-    const title = $('.detail-hero__title, h1').first().text().trim() || 'Sin título';
-    
-    let year = null;
-    $('.detail-hero__meta span').each((i, el) => {
-      const text = $(el).text().trim();
-      if (/^\d{4}$/.test(text)) year = text;
-    });
-    
-    const synopsis = $('.detail-hero__desc').first().text().trim() || 'Sinopsis no disponible';
-    
-    const downloadLinks = [];
-    const iframeSrc = $('#player-iframe').attr('src');
-    if (iframeSrc) {
-      downloadLinks.push({
-        server: 'Embed69',
-        url: iframeSrc.startsWith('/') ? this.baseURL + iframeSrc : iframeSrc,
-        type: 'embed',
-        quality: 'HD'
-      });
-    }
-    
-    $('.server-btn').each((i, el) => {
-      const dataUrl = $(el).attr('data-url');
-      if (dataUrl) {
-        const fullUrl = dataUrl.startsWith('/') ? this.baseURL + dataUrl : dataUrl;
-        if (!downloadLinks.some(s => s.url === fullUrl)) {
-          downloadLinks.push({
-            server: $(el).text().trim() || `Servidor ${i+1}`,
-            url: fullUrl,
-            type: 'embed',
-            quality: 'HD'
-          });
+    try {
+        const $ = await this.fetchHTML(url);
+        if (!$) {
+            console.log('❌ fetchHTML devolvió null');
+            return null;
         }
-      }
-    });
-    
-    const poster = $('.detail-hero__poster img').first().attr('src') || null;
-    
-    return {
-      title: title,
-      synopsis: synopsis.substring(0, 500),
-      year: year,
-      url: url,
-      provider: this.name,
-      poster: poster,
-      downloadLinks: downloadLinks
-    };
-  }
+        
+        // Título
+        const title = $('.detail-hero__title, h1').first().text().trim() || 'Sin título';
+        console.log(`📌 Título encontrado: "${title}"`);
+        
+        // Año
+        let year = null;
+        $('.detail-hero__meta span').each((i, el) => {
+            const text = $(el).text().trim();
+            if (/^\d{4}$/.test(text)) {
+                year = text;
+                console.log(`📌 Año encontrado: "${year}"`);
+            }
+        });
+        
+        // Sinopsis
+        let synopsis = $('.detail-hero__desc').first().text().trim();
+        if (!synopsis) synopsis = 'Sinopsis no disponible';
+        console.log(`📌 Sinopsis: ${synopsis.substring(0, 100)}...`);
+        
+        // Servidores
+        const downloadLinks = [];
+        
+        // Buscar iframe
+        const iframeSrc = $('#player-iframe').attr('src');
+        if (iframeSrc) {
+            const fullUrl = iframeSrc.startsWith('/') ? this.baseURL + iframeSrc : iframeSrc;
+            console.log(`📌 Iframe encontrado: ${fullUrl}`);
+            downloadLinks.push({
+                server: 'Embed69',
+                url: fullUrl,
+                type: 'embed',
+                quality: 'HD'
+            });
+        } else {
+            console.log('⚠️ No se encontró iframe con #player-iframe');
+        }
+        
+        // Buscar botones de servidores
+        $('.server-btn').each((i, el) => {
+            const dataUrl = $(el).attr('data-url');
+            if (dataUrl) {
+                const fullUrl = dataUrl.startsWith('/') ? this.baseURL + dataUrl : dataUrl;
+                if (!downloadLinks.some(s => s.url === fullUrl)) {
+                    console.log(`📌 Botón servidor encontrado: ${fullUrl}`);
+                    downloadLinks.push({
+                        server: $(el).text().trim() || `Servidor ${i+1}`,
+                        url: fullUrl,
+                        type: 'embed',
+                        quality: 'HD'
+                    });
+                }
+            }
+        });
+        
+        // Poster
+        const poster = $('.detail-hero__poster img').first().attr('src') || null;
+        
+        const result = {
+            title: title,
+            synopsis: synopsis.substring(0, 500),
+            year: year,
+            url: url,
+            provider: this.name,
+            poster: poster,
+            downloadLinks: downloadLinks
+        };
+        
+        console.log(`✅ getInfo exitoso: ${title} - ${downloadLinks.length} servidores`);
+        return result;
+        
+    } catch (error) {
+        console.error(`❌ Error en getInfo: ${error.message}`);
+        return null;
+    }
+}
 }
 
 module.exports = SeriesKaoProvider;
