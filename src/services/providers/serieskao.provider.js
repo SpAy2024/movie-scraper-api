@@ -8,31 +8,24 @@ class SeriesKaoProvider extends BaseProvider {
       'https://serieskao.top',
       'https://www.serieskao.top'
     ];
-    
-    // Tipos de contenido que maneja
-    this.contentTypes = {
-      movie: '/pelicula/',
-      serie: '/serie/',
-      anime: '/anime/',
-      dorama: '/dorama/'
-    };
+  }
+
+  // Normalizar texto para comparación exacta
+  normalizeText(text) {
+    if (!text) return '';
+    return text
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   isExactMatch(title, query, year = null, resultYear = null) {
     if (!title || !query) return false;
     
-    const normalize = (str) => {
-      return str
-        .toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^\w\s]/g, '')
-        .replace(/\s+/g, ' ')
-        .replace(/^(el |la |los |las |un |una |unos |unas )/i, '')
-        .trim();
-    };
-    
-    const normalizedTitle = normalize(title);
-    const normalizedQuery = normalize(query);
+    const normalizedTitle = this.normalizeText(title);
+    const normalizedQuery = this.normalizeText(query);
     
     if (normalizedTitle === normalizedQuery) {
       console.log(`   ✅ EXACTO: "${title}" === "${query}"`);
@@ -52,65 +45,58 @@ class SeriesKaoProvider extends BaseProvider {
   }
 
   async search(query, year = null) {
-    const searchUrl = `${this.baseURL}/?s=${encodeURIComponent(query)}`;
+    // SeriesKao usa /search?s=query (no /?s=query)
+    const searchUrl = `${this.baseURL}/search?s=${encodeURIComponent(query)}`;
     console.log(`🔍 Buscando en ${this.name}: ${searchUrl}`);
     
     const $ = await this.fetchHTML(searchUrl);
     if (!$) return [];
 
     const movies = [];
-    const queryLower = query.toLowerCase();
+    const queryLower = this.normalizeText(query);
     
-    // Buscar en todos los tipos de contenido
-    const contentSelectors = [
-      'a[href*="/pelicula/"]',
-      'a[href*="/serie/"]',
-      'a[href*="/anime/"]',
-      'a[href*="/dorama/"]',
-      'article a',
-      '.item a'
-    ];
-    
-    for (const selector of contentSelectors) {
-      $(selector).each((i, el) => {
-        let url = $(el).attr('href');
-        if (!url) return;
-        
-        // Verificar qué tipo de contenido es
-        let contentType = 'movie';
-        if (url.includes('/serie/')) contentType = 'serie';
-        else if (url.includes('/anime/')) contentType = 'anime';
-        else if (url.includes('/dorama/')) contentType = 'dorama';
-        else if (!url.includes('/pelicula/')) return;
-        
-        let title = $(el).find('h3, .title, .entry-title').text().trim();
-        if (!title) title = $(el).attr('title') || $(el).text().trim();
-        if (!title) return;
-        
-        title = title.replace(/\s*\|\s*SeriesKao$/, '').trim();
-        
-        let itemYear = null;
-        const yearMatch = title.match(/\b(19|20)\d{2}\b/);
+    // Buscar en los resultados de búsqueda - usando las clases reales del sitio
+    $('.card, article.card, .grid--cards .card, a[href*="/pelicula/"], a[href*="/serie/"], a[href*="/anime/"]').each((i, el) => {
+      let url = $(el).attr('href');
+      if (!url) return;
+      
+      // Determinar tipo de contenido
+      let contentType = 'movie';
+      if (url.includes('/serie/')) contentType = 'serie';
+      else if (url.includes('/anime/')) contentType = 'anime';
+      else if (url.includes('/generos/dorama')) contentType = 'dorama';
+      else if (!url.includes('/pelicula/') && !url.includes('/serie/') && !url.includes('/anime/')) return;
+      
+      // Extraer título
+      let title = $(el).find('.card__title, h4, h3').text().trim();
+      if (!title) title = $(el).attr('title') || $(el).find('img').attr('alt');
+      if (!title) return;
+      
+      // Extraer año del badge
+      let itemYear = null;
+      const yearBadge = $(el).find('.card__badge--year, .year').text().trim();
+      if (yearBadge) {
+        const yearMatch = yearBadge.match(/\b(19|20)\d{2}\b/);
         if (yearMatch) itemYear = yearMatch[0];
-        title = title.replace(/\s*\(?\b(19|20)\d{2}\b\)?\s*$/, '').trim();
+      }
+      
+      const normalizedTitle = this.normalizeText(title);
+      const isExact = (normalizedTitle === queryLower);
+      
+      if (isExact && title.length > 2) {
+        const fullUrl = url.startsWith('http') ? url : this.baseURL + url;
         
-        const isExact = this.isExactMatch(title, query, year, itemYear);
-        
-        if (isExact && title.length > 2) {
-          const fullUrl = url.startsWith('http') ? url : this.baseURL + url;
-          
-          movies.push({
-            id: this.extractId(url),
-            title: title,
-            year: itemYear,
-            url: fullUrl,
-            thumbnail: $(el).find('img').attr('src') || null,
-            provider: this.name,
-            type: contentType
-          });
-        }
-      });
-    }
+        movies.push({
+          id: null,
+          title: title,
+          year: itemYear,
+          url: fullUrl,
+          thumbnail: $(el).find('img').first().attr('src') || null,
+          provider: this.name,
+          type: contentType
+        });
+      }
+    });
     
     // Eliminar duplicados
     const uniqueMovies = [];
@@ -122,7 +108,7 @@ class SeriesKaoProvider extends BaseProvider {
       }
     }
     
-    console.log(`✅ ${this.name}: ${uniqueMovies.length} resultados`);
+    console.log(`✅ ${this.name}: ${uniqueMovies.length} resultados exactos`);
     return uniqueMovies;
   }
 
@@ -131,75 +117,59 @@ class SeriesKaoProvider extends BaseProvider {
     const $ = await this.fetchHTML(url);
     if (!$) return null;
     
-    // Detectar tipo de contenido
+    // Detectar tipo de contenido por la URL
     let contentType = 'movie';
     if (url.includes('/serie/')) contentType = 'serie';
     else if (url.includes('/anime/')) contentType = 'anime';
     else if (url.includes('/dorama/')) contentType = 'dorama';
     
     // Título
-    let title = $('h1').first().text().trim();
-    if (!title) title = $('.title, .entry-title').first().text().trim();
-    title = title.replace(/\s*\|\s*SeriesKao$/, '').trim();
+    let title = $('.detail-hero__title, h1').first().text().trim();
+    if (!title) title = $('meta[property="og:title"]').attr('content')?.replace(' - SeriesKao', '') || 'Sin título';
     
     // Año
     let year = null;
-    $('.year, .date, .fecha, .meta-info').each((i, el) => {
+    $('.detail-hero__meta span, .year').each((i, el) => {
       const text = $(el).text();
       const match = text.match(/\b(19|20)\d{2}\b/);
       if (match) year = match[0];
     });
     
     // Sinopsis
-    let synopsis = '';
-    const sinopsisSelectors = [
-      '.description', '.sinopsis', '.plot', 
-      '.content p', '.entry-content p',
-      'meta[name="description"]'
-    ];
+    let synopsis = $('.detail-hero__desc, .description, meta[name="description"]').first().text().trim();
+    if (!synopsis) synopsis = $('meta[property="og:description"]').attr('content') || 'Sinopsis no disponible';
     
-    for (const selector of sinopsisSelectors) {
-      if (selector.startsWith('meta')) {
-        const content = $(selector).attr('content');
-        if (content && content.length > 100) {
-          synopsis = content;
-          break;
-        }
-      } else {
-        const text = $(selector).first().text().trim();
-        if (text && text.length > 100) {
-          synopsis = text;
-          break;
-        }
-      }
-    }
+    // Rating
+    let rating = null;
+    $('.detail-hero__rating').each((i, el) => {
+      const text = $(el).text().trim();
+      const match = text.match(/(\d+(?:\.\d+)?)/);
+      if (match) rating = match[1];
+    });
     
     // ============================================================
-    // EXTRACCIÓN DE SERVIDORES DE VIDEO (Embed69)
+    // EXTRACCIÓN DE SERVIDORES
     // ============================================================
     const downloadLinks = [];
     
-    // Método 1: Buscar botones .server-btn con data-url
-    $('.server-btn, [data-url]').each((i, el) => {
-      let videoUrl = $(el).attr('data-url');
-      if (!videoUrl) videoUrl = $(el).attr('href');
+    // Buscar botones de servidores (Embed69)
+    $('.server-btn, .player-box__servers button').each((i, el) => {
+      const dataUrl = $(el).attr('data-url');
+      const serverName = $(el).text().trim() || 'Servidor';
       
-      if (videoUrl && videoUrl.includes('/vidurl/')) {
-        const fullUrl = videoUrl.startsWith('/') ? this.baseURL + videoUrl : videoUrl;
-        const serverName = $(el).text().trim() || `Servidor ${i + 1}`;
-        
+      if (dataUrl) {
+        const fullUrl = dataUrl.startsWith('/') ? this.baseURL + dataUrl : dataUrl;
         downloadLinks.push({
           server: serverName,
           url: fullUrl,
-          type: 'link',
-          quality: 'HD',
-          note: 'Abre este enlace en tu navegador para ver el contenido'
+          type: 'embed',
+          quality: 'HD'
         });
       }
     });
     
-    // Método 2: Buscar iframe del reproductor
-    $('#player-iframe, .player-box__frame iframe, iframe[src*="/vidurl/"]').each((i, el) => {
+    // Buscar iframe del reproductor
+    $('#player-iframe, .player-box__frame iframe').each((i, el) => {
       let src = $(el).attr('src');
       if (src && src.includes('/vidurl/')) {
         const fullUrl = src.startsWith('/') ? this.baseURL + src : src;
@@ -207,21 +177,20 @@ class SeriesKaoProvider extends BaseProvider {
           downloadLinks.push({
             server: 'Reproductor Embed69',
             url: fullUrl,
-            type: 'link',
+            type: 'embed',
             quality: 'HD'
           });
         }
       }
     });
     
-    // Método 3: Para series, buscar estructura de episodios
-    if (contentType === 'serie' || contentType === 'anime' || contentType === 'dorama') {
+    // Para series/animes: extraer lista de episodios
+    if (contentType === 'serie' || contentType === 'anime') {
       const episodes = [];
-      
-      $('.episodes-list a, .episodios a, .capitulos a, .ep-list a').each((i, el) => {
+      $('.episodes-list a.episode-item, .episodios a').each((i, el) => {
         const episodeUrl = $(el).attr('href');
-        const episodeNum = $(el).find('.episode-number, .num').text().trim() || i + 1;
-        const episodeTitle = $(el).find('.title').text().trim() || `Episodio ${episodeNum}`;
+        const episodeNum = $(el).find('.episode-item__number').text().trim() || (i + 1).toString();
+        const episodeTitle = $(el).find('.episode-item__title').text().trim() || `Episodio ${episodeNum}`;
         
         if (episodeUrl) {
           episodes.push({
@@ -234,7 +203,7 @@ class SeriesKaoProvider extends BaseProvider {
       
       if (episodes.length > 0) {
         downloadLinks.push({
-          server: 'Lista de Episodios',
+          server: '📺 Lista de Episodios',
           episodes: episodes,
           type: 'episodes',
           quality: 'HD'
@@ -242,28 +211,28 @@ class SeriesKaoProvider extends BaseProvider {
       }
     }
     
-    // Si no se encontraron servidores, devolver la URL original
+    // Si no se encontraron servidores, devolver URL original
     if (downloadLinks.length === 0) {
       downloadLinks.push({
-        server: `Ver en ${contentType.toUpperCase()}`,
+        server: `Ver en SeriesKao`,
         url: url,
         type: 'link',
         quality: 'HD',
-        note: 'Visita la página directamente para ver el contenido'
+        note: 'Visita la página directamente'
       });
     }
     
     // Poster
-    let poster = null;
-    const posterImg = $('.poster img, .thumbnail img, .entry-image img').attr('src');
-    if (posterImg) poster = posterImg;
+    let poster = $('.detail-hero__poster img, .poster img, meta[property="og:image"]').first().attr('src');
+    if (!poster) poster = $('img[alt="' + title + '"]').first().attr('src');
     
     console.log(`✅ ${this.name}: ${downloadLinks.length} enlaces encontrados`);
     
     return {
-      title: title || 'Sin título',
+      title: title,
       synopsis: synopsis.substring(0, 600) || 'Sinopsis no disponible',
       year: year,
+      rating: rating,
       url: url,
       provider: this.name,
       type: contentType,
