@@ -1,116 +1,160 @@
 const BaseProvider = require('./BaseProvider');
+const puppeteer = require('puppeteer');
 
 class SeriesKaoProvider extends BaseProvider {
   constructor() {
     super('serieskao', 'https://serieskao.top', '/');
+    this.browser = null;
+  }
+
+  async getBrowser() {
+    if (!this.browser) {
+      this.browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+    }
+    return this.browser;
   }
 
   async search(query, year = null) {
     console.log(`🔍 Buscando en ${this.name}: "${query}"`);
     
-    // Usar el buscador de SeriesKao
     const searchUrl = `${this.baseURL}/search?s=${encodeURIComponent(query)}`;
     console.log(`🌐 Buscando en: ${searchUrl}`);
     
-    const $ = await this.fetchHTML(searchUrl);
-    if (!$) {
-      console.log('❌ No se pudo cargar la página de búsqueda');
+    try {
+      const browser = await this.getBrowser();
+      const page = await browser.newPage();
+      
+      await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+      
+      // Esperar a que carguen los resultados
+      await page.waitForSelector('.card, a[href*="/pelicula/"]', { timeout: 10000 }).catch(() => {
+        console.log('⚠️ No se encontraron resultados en la página');
+      });
+      
+      // Extraer datos
+      const movies = await page.evaluate((query) => {
+        const results = [];
+        const queryLower = query.toLowerCase();
+        
+        document.querySelectorAll('a[href*="/pelicula/"]').forEach(el => {
+          let url = el.getAttribute('href');
+          if (!url) return;
+          
+          let title = el.querySelector('.card__title, h4, h3')?.innerText?.trim();
+          if (!title) title = el.getAttribute('title');
+          if (!title) title = el.querySelector('img')?.getAttribute('alt');
+          if (!title) return;
+          
+          if (title.toLowerCase().includes(queryLower)) {
+            const fullUrl = url.startsWith('http') ? url : `https://serieskao.top${url}`;
+            const thumbnail = el.querySelector('img')?.getAttribute('src') || null;
+            
+            let year = null;
+            const yearMatch = title.match(/\d{4}/);
+            if (yearMatch) year = yearMatch[0];
+            
+            results.push({
+              title: title,
+              year: year,
+              url: fullUrl,
+              thumbnail: thumbnail,
+              type: 'movie'
+            });
+          }
+        });
+        
+        return results;
+      }, query);
+      
+      await page.close();
+      
+      console.log(`✅ ${this.name}: ${movies.length} resultados`);
+      return movies.map(m => ({
+        id: null,
+        title: m.title,
+        year: m.year,
+        url: m.url,
+        thumbnail: m.thumbnail,
+        provider: this.name,
+        type: 'movie'
+      }));
+      
+    } catch (error) {
+      console.error(`❌ Error en búsqueda: ${error.message}`);
       return [];
     }
-    
-    const movies = [];
-    const queryLower = query.toLowerCase();
-    
-    // Buscar enlaces a películas
-    $('a[href*="/pelicula/"]').each((i, el) => {
-      let url = $(el).attr('href');
-      if (!url || !url.includes('/pelicula/')) return;
-      
-      let title = $(el).find('.card__title, h4, h3').text().trim();
-      if (!title) title = $(el).attr('title');
-      if (!title) title = $(el).find('img').attr('alt');
-      if (!title) return;
-      
-      // Verificar que el título coincida con la búsqueda
-      if (title.toLowerCase().includes(queryLower) || queryLower.includes(title.toLowerCase())) {
-        const fullUrl = url.startsWith('http') ? url : this.baseURL + url;
-        const thumbnail = $(el).find('img').first().attr('src');
-        
-        // Extraer año si está disponible
-        let itemYear = null;
-        const yearMatch = title.match(/\b(19|20)\d{2}\b/);
-        if (yearMatch) itemYear = yearMatch[0];
-        
-        console.log(`   ✅ Encontrada: ${title}`);
-        
-        movies.push({
-          id: null,
-          title: title,
-          year: itemYear,
-          url: fullUrl,
-          thumbnail: thumbnail,
-          provider: this.name,
-          type: 'movie'
-        });
-      }
-    });
-    
-    console.log(`✅ ${this.name}: ${movies.length} resultados`);
-    return movies;
   }
 
   async getInfo(url) {
     console.log(`📄 ${this.name}.getInfo(): ${url}`);
-    const $ = await this.fetchHTML(url);
-    if (!$) return null;
     
-    const title = $('.detail-hero__title, h1').first().text().trim() || 'Sin título';
-    
-    let year = null;
-    $('.detail-hero__meta span').each((i, el) => {
-      const text = $(el).text().trim();
-      if (/^\d{4}$/.test(text)) year = text;
-    });
-    
-    const synopsis = $('.detail-hero__desc').first().text().trim() || 'Sinopsis no disponible';
-    
-    const downloadLinks = [];
-    const iframeSrc = $('#player-iframe').attr('src');
-    if (iframeSrc) {
-      downloadLinks.push({
-        server: 'Embed69',
-        url: iframeSrc.startsWith('/') ? this.baseURL + iframeSrc : iframeSrc,
-        type: 'embed',
-        quality: 'HD'
-      });
-    }
-    
-    $('.server-btn').each((i, el) => {
-      const dataUrl = $(el).attr('data-url');
-      if (dataUrl) {
-        const fullUrl = dataUrl.startsWith('/') ? this.baseURL + dataUrl : dataUrl;
-        if (!downloadLinks.some(s => s.url === fullUrl)) {
+    try {
+      const browser = await this.getBrowser();
+      const page = await browser.newPage();
+      
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+      
+      const data = await page.evaluate(() => {
+        const title = document.querySelector('.detail-hero__title, h1')?.innerText?.trim() || 'Sin título';
+        
+        let year = null;
+        document.querySelectorAll('.detail-hero__meta span').forEach(el => {
+          const text = el.innerText.trim();
+          if (/^\d{4}$/.test(text)) year = text;
+        });
+        
+        const synopsis = document.querySelector('.detail-hero__desc')?.innerText?.trim() || 'Sinopsis no disponible';
+        
+        const downloadLinks = [];
+        const iframeSrc = document.querySelector('#player-iframe')?.getAttribute('src');
+        if (iframeSrc) {
           downloadLinks.push({
-            server: $(el).text().trim() || `Servidor ${i+1}`,
-            url: fullUrl,
+            server: 'Embed69',
+            url: iframeSrc.startsWith('/') ? 'https://serieskao.top' + iframeSrc : iframeSrc,
             type: 'embed',
             quality: 'HD'
           });
         }
-      }
-    });
-    
-    const poster = $('.detail-hero__poster img').first().attr('src') || null;
-    
-    return {
-      title: title,
-      synopsis: synopsis.substring(0, 500),
-      year: year,
-      url: url,
-      provider: this.name,
-      poster: poster,
-      downloadLinks: downloadLinks
-    };
+        
+        document.querySelectorAll('.server-btn').forEach(btn => {
+          const dataUrl = btn.getAttribute('data-url');
+          if (dataUrl) {
+            const fullUrl = dataUrl.startsWith('/') ? 'https://serieskao.top' + dataUrl : dataUrl;
+            if (!downloadLinks.some(s => s.url === fullUrl)) {
+              downloadLinks.push({
+                server: btn.innerText.trim() || 'Servidor',
+                url: fullUrl,
+                type: 'embed',
+                quality: 'HD'
+              });
+            }
+          }
+        });
+        
+        const poster = document.querySelector('.detail-hero__poster img')?.getAttribute('src') || null;
+        
+        return { title, year, synopsis, downloadLinks, poster };
+      });
+      
+      await page.close();
+      
+      return {
+        title: data.title,
+        synopsis: data.synopsis.substring(0, 500),
+        year: data.year,
+        url: url,
+        provider: this.name,
+        poster: data.poster,
+        downloadLinks: data.downloadLinks
+      };
+      
+    } catch (error) {
+      console.error(`❌ Error en getInfo: ${error.message}`);
+      return null;
+    }
   }
 }
 
